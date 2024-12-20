@@ -124,26 +124,81 @@ long long get_cur_time() {
 enum KeyState {
     init = 0, //at the program start
     keydown, //after keydown
-    used,//after some keydown
+    locked,//after some keydown
 };
+
+void send_key(int dwFlags, int vcode) {
+    INPUT input;
+    input.type = INPUT_KEYBOARD;
+    input.ki.wVk = vcode;
+    input.ki.wScan = 0;
+    input.ki.dwFlags = dwFlags;
+    input.ki.time = 0;
+    input.ki.dwExtraInfo = 0;
+    SendInput(1, &input, sizeof(INPUT));
+
+}
 class Key {
-    KeyState state = init;
-    Lockable lockable;
-    long long last_updated;
 public:
-    Key(Lockable l) :lockable(l) {
-        last_updated = get_cur_time();
+    virtual void event(int wParam,int vcode) = 0;
+};
+static int wparam_to_eventf(int wParam) {
+    return (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
+
+}
+class ForwardKey:public Key {
+public:
+    int forwardvcode;
+    ForwardKey(int _forwardvcode) :forwardvcode(_forwardvcode) {
+    }
+    void event(int wParam, int vcode) {
+        send_key(wparam_to_eventf(wParam),forwardvcode);
     }
 };
-static Key* keys[236] = { nullptr };
-void setup() {
-    keys['F'] = new Key(ctrl);
-    keys['D'] = new Key(shift);
-    keys['S'] = new Key(alt);
-    keys['J'] = new Key(ctrl);
-    keys['K'] = new Key(shift);
-    keys['L'] = new Key(alt);
+class HomeRowKey:public Key {
+    KeyState state = init;
+    Lockable lockable;
+public:
+    HomeRowKey(Lockable l) :lockable(l) {
+    }
+    void event(int wParam, int vcode) {
+        send_key(wparam_to_eventf(wParam), vcode);
+    }
+};
+class LayerKey :public Key {
+    const Key** layer;
+public:
+    LayerKey(Key** _layer) :layer(_layer) {
+    }
+    void event(int wParam, int vcode) {
+        send_key(wparam_to_eventf(wParam), vcode);
+    }
+
+};
+Key** make_layer() {
+    return new Key * [256] { nullptr };
 }
+Key** make_nav_layer() {
+    const auto ans = make_layer();
+    ans['J'] = new ForwardKey(VK_UP);
+    ans['M'] = new ForwardKey(VK_DOWN);
+    ans['N'] = new ForwardKey(VK_LEFT);
+    ans[','] = new ForwardKey(VK_LEFT);
+    return ans;
+}
+Key** make_main_layer(){
+    const auto ans = make_layer();
+    ans['F'] = new HomeRowKey(ctrl);
+    ans['D'] = new HomeRowKey(shift);
+    ans['S'] = new HomeRowKey(alt);
+    ans['J'] = new HomeRowKey(ctrl);
+    ans['K'] = new HomeRowKey(shift);
+    ans['L'] = new HomeRowKey(alt);
+    ans[' '] = new LayerKey(make_nav_layer());
+    return ans;
+}
+Key** const main_layer = make_main_layer();
+Key ** cur_layer = main_layer;
 /*alg:
 * on f keydown: send ctrl on keydown
 * on f keyup: send ctl keyup. state==keydown and passed less that thredhof. send fkeyown+fup
@@ -154,20 +209,12 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     if (nCode == HC_ACTION) {
         KBDLLHOOKSTRUCT* pKbDllHookStruct = (KBDLLHOOKSTRUCT*)lParam;
         std::cout << wmparm_to_tr(wParam) << ':' << vcode_to_string(pKbDllHookStruct->vkCode) << std::endl;
-        if (pKbDllHookStruct->vkCode == 0x41) {
-            // Modify the key to 'B' (virtual key code 0x42)
-            INPUT input;
-            input.type = INPUT_KEYBOARD;
-            input.ki.wVk = 0x42; // 'B'
-            input.ki.wScan = 0;
-            input.ki.dwFlags = (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
-            input.ki.time = 0;
-            input.ki.dwExtraInfo = 0;
-            SendInput(1, &input, sizeof(INPUT));
-
-            // Suppress original 'A'
-            return 1;
-        }
+        auto vcode = pKbDllHookStruct->vkCode;
+        auto key = cur_layer[vcode];
+        if (key== nullptr)
+            return CallNextHookEx(hHook, nCode, wParam, lParam);
+        key->event(wParam, vcode);
+        return 1; //suppress original
     }
 
     return CallNextHookEx(hHook, nCode, wParam, lParam);
@@ -195,11 +242,10 @@ void UninstallHook() {
 
 int main() {
     MSG msg;
-    setup();
 
     // Install the keyboard hook
     InstallHook();
-
+    
     // Message loop to keep the program running
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
