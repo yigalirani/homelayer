@@ -105,9 +105,35 @@ public:
     LayerKey(Key** _layer) :layer(_layer) {
     }
     void event(WPARAM wParam, int vcode) {
-        send_key(wParam, vcode);
-        if (is_down(wParam)) {
+        if (state == init) {
+            if (is_up(wParam)) {
+                printf("unexpexted state for LayerKey"); //hepfule will not get here
+                return send_key(wParam, vcode);
+            }
+            main_obj.cur_layer = layer;
+            state = keydown;
+            return;
         }
+        if (state == keydown) {
+            if (is_up(wParam)) {
+                send_key(WM_KEYDOWN, vcode);
+                send_key(WM_KEYUP, vcode);
+                state = init;
+                main_obj.cur_layer = main_obj.top_layer;
+                return;
+            }
+            state = locked;
+            return;
+        }
+        send_key(wParam, vcode);
+        if (is_up(wParam)) {
+            state = init;
+            main_obj.cur_layer = main_obj.top_layer;
+            state = init;
+            return;
+        }
+        //nothing to do on key down
+
     }
 
 };
