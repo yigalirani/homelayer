@@ -4,6 +4,7 @@
 #include <vector>  
 #include <set> 
 #include "utils.hpp"
+#define HOMELAYER_MAGIC 0xDEADBEEF
 void send_key(WPARAM wParam, int vcode) {
     INPUT input;
     input.type = INPUT_KEYBOARD;
@@ -11,13 +12,14 @@ void send_key(WPARAM wParam, int vcode) {
     input.ki.wScan = 0;
     input.ki.dwFlags = (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
     input.ki.time = 0;
-    input.ki.dwExtraInfo = 0;
+    input.ki.dwExtraInfo = HOMELAYER_MAGIC;
+    cout << " , "<<pcode_to_str(wParam, vcode) << flush;
     SendInput(1, &input, sizeof(INPUT));
 }
-boolean is_up(WPARAM wParam) {
+bool is_up(WPARAM wParam) {
     return wParam == WM_KEYUP || wParam == WM_SYSKEYUP;
 }
-boolean is_down(WPARAM wParam) {
+bool is_down(WPARAM wParam) {
     return wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN;
 }
 class Key;
@@ -72,26 +74,26 @@ public:
         }
         if (state == keydown) {
             if (is_up(wParam)) {
-                send_key(wParam, modevcode); //revert the mod
-                send_key(WM_KEYDOWN, vcode); //send the original keym both down and up
+                send_key(WM_KEYUP, modevcode);
+                send_key(WM_KEYDOWN, vcode); //revert the mod
                 send_key(WM_KEYUP, vcode);
                 main_obj.locked_mods.erase(modevcode);
                 state = init;
                 return;
             }
-            send_key(wParam, modevcode); //double dowm on the mode as 
+            send_key(WM_KEYDOWN, modevcode); //double dowm on the mode as 
             state = locked;
             return;
         }
         if (state == locked) {
             if (is_up(wParam)) {
-                send_key(wParam, modevcode); //revert the mod
+                send_key(WM_KEYUP, modevcode); //revert the mod
                 //dont send the original key because its bein too long
                 main_obj.locked_mods.erase(modevcode);
                 state = init;
                 return;
             }
-            send_key(wParam, modevcode); //double dowm on the mode as 
+            send_key(WM_KEYDOWN, modevcode); //double dowm on the mode as 
             return;
         }
     }
@@ -125,9 +127,8 @@ public:
             state = locked;
             return;
         }
-        send_key(wParam, vcode);
+        //send_key(wParam, vcode);
         if (is_up(wParam)) {
-            state = init;
             main_obj.cur_layer = main_obj.top_layer;
             state = init;
             return;
@@ -169,18 +170,30 @@ void setup(){
 */
 
 // Callback function for the low-level keyboard hook
-LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
-    if (nCode == HC_ACTION) {
-        KBDLLHOOKSTRUCT* pKbDllHookStruct = (KBDLLHOOKSTRUCT*)lParam;
-        std::cout << wmparm_to_tr(wParam) << ':' << vcode_to_string(pKbDllHookStruct->vkCode) << std::endl;
-        auto vcode = pKbDllHookStruct->vkCode;
-        auto key = main_obj.cur_layer[vcode];
-        if (key== nullptr)
-            return CallNextHookEx(main_obj.hHook, nCode, wParam, lParam);
-        key->event(wParam, vcode);
-        return 1; //suppress original
-    }
+Key* get_key(int vcode) {
+    auto ans= main_obj.cur_layer[vcode];
+    if (ans != nullptr)
+        return ans;
+    return main_obj.top_layer[vcode];
+}
 
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
+    KBDLLHOOKSTRUCT* pKbDllHookStruct = (KBDLLHOOKSTRUCT*)lParam;
+    auto doit = [&]() {
+        if (nCode != HC_ACTION)            
+            return false;
+        if (pKbDllHookStruct->dwExtraInfo == HOMELAYER_MAGIC)
+            return false; //skipped to avoid proccesing      our own synthetic 
+        auto vcode = pKbDllHookStruct->vkCode;
+        auto key = get_key(vcode);
+        std::cout << endl<<pcode_to_str(wParam,vcode) << flush;
+        if (key == nullptr)
+            return false;
+        key->event(wParam, vcode);
+        return true;
+    }; 
+    if (doit())
+        return 1;
     return CallNextHookEx(main_obj.hHook, nCode, wParam, lParam);
 }
 

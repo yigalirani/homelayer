@@ -1,3 +1,9 @@
+#include <iostream>
+#include <string>
+#include <cstring>
+#include <string> 
+#include <algorithm> // For std::max
+using namespace std;
 static const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
     case 0x0100: return "WM_KEYDOWN";
@@ -12,6 +18,8 @@ static const char* wmparm_to_tr(WPARAM parm) {
     default: return "Unknown WM code";
     }
 }
+
+
 
 
 static const char* vcode_to_string(int vcode) {
@@ -82,7 +90,7 @@ static const char* vcode_to_string(int vcode) {
     case VK_F10: return "F10";
     case VK_F11: return "F11";
     case VK_F12: return "F12";
-    case VK_NUMLOCK: return "Num Lock";
+     case VK_NUMLOCK: return "Num Lock";
     case VK_SCROLL: return "Scroll Lock";
     case VK_LSHIFT: return "VK_LSHIFT";
     case VK_RSHIFT: return "VK_RSHIFT";
@@ -93,12 +101,27 @@ static const char* vcode_to_string(int vcode) {
     default: return "Unknown Key";
     }
 }
+/*int maxOfTwo(size_t a, size_t b) {
+    return (a > b) ? a : b; // Ternary operator to return the larger value
+}*/
+
+string adjustString(const char* input, int length) {
+    int inputLength = std::strlen(input);
+
+    if (inputLength > length) {
+        return std::string(input, length);
+    }
+    return std::string(input) + std::string(length - inputLength, ' ');
+}
+static string pcode_to_str(WPARAM wparm, int vcode) {
+    string ans=string(wmparm_to_tr(wparm)) + ":" + vcode_to_string(vcode); //add padding here so its always the same width
+    return adjustString(ans.c_str(), 20);
+}
 #define EPOCH_DIFFERENCE 11644473600000LL // Difference between 1601 and 1970 in milliseconds
 
 long long get_cur_time() {
     FILETIME fileTime;
     ULARGE_INTEGER largeInt;
-
     // Get the current system time as FILETIME
     GetSystemTimeAsFileTime(&fileTime);
 
