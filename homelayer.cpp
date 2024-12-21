@@ -1,177 +1,113 @@
 #include <windows.h>
 #include <stdio.h>
 #include <iostream>
-
-// Global hook handle
-HHOOK hHook;
-static const char* wmparm_to_tr(int parm) {
-    switch (parm) {
-    case 0x0100: return "WM_KEYDOWN";
-    case 0x0101: return "WM_KEYUP";
-    case 0x0102: return "WM_CHAR";
-    case 0x0103: return "WM_DEADCHAR";
-    case 0x0104: return "WM_SYSKEYDOWN";
-    case 0x0105: return "WM_SYSKEYUP";
-    case 0x0106: return "WM_SYSCHAR";
-    case 0x0107: return "WM_SYSDEADCHAR";
-    case 0x0109: return "WM_UNICHAR";
-    default: return "Unknown WM code";
-    }
+#include <vector>  
+#include <set> 
+#include "utils.hpp"
+void send_key(WPARAM wParam, int vcode) {
+    INPUT input;
+    input.type = INPUT_KEYBOARD;
+    input.ki.wVk = vcode;
+    input.ki.wScan = 0;
+    input.ki.dwFlags = (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
+    input.ki.time = 0;
+    input.ki.dwExtraInfo = 0;
+    SendInput(1, &input, sizeof(INPUT));
 }
-#include <windows.h>
-
-static const char* vcode_to_string(int vcode) {
-    static char buffer[2]; // For single-character keys (e.g., 'A', '1')
-
-    // Alphanumeric keys
-    if (vcode >= 'A' && vcode <= 'Z') {
-        buffer[0] = (char)vcode; // Convert vkCode to character
-        buffer[1] = '\0';        // Null-terminate the string
-        return buffer;
-    }
-    if (vcode >= '0' && vcode <= '9') {
-        buffer[0] = (char)vcode; // Convert vkCode to character
-        buffer[1] = '\0';        // Null-terminate the string
-        return buffer;
-    }
-
-    // Special keys
-    switch (vcode) {
-    case VK_BACK: return "Backspace";
-    case VK_TAB: return "Tab";
-    case VK_RETURN: return "Enter";
-    case VK_SHIFT: return "Shift";
-    case VK_CONTROL: return "Control";
-    case VK_MENU: return "Alt";
-    case VK_PAUSE: return "Pause";
-    case VK_CAPITAL: return "Caps Lock";
-    case VK_ESCAPE: return "Escape";
-    case VK_SPACE: return "Space";
-    case VK_PRIOR: return "Page Up";
-    case VK_NEXT: return "Page Down";
-    case VK_END: return "End";
-    case VK_HOME: return "Home";
-    case VK_LEFT: return "Left Arrow";
-    case VK_UP: return "Up Arrow";
-    case VK_RIGHT: return "Right Arrow";
-    case VK_DOWN: return "Down Arrow";
-    case VK_INSERT: return "Insert";
-    case VK_DELETE: return "Delete";
-    case VK_LWIN: return "Left Windows Key";
-    case VK_RWIN: return "Right Windows Key";
-    case VK_APPS: return "Applications Key";
-    case VK_NUMPAD0: return "Numpad 0";
-    case VK_NUMPAD1: return "Numpad 1";
-    case VK_NUMPAD2: return "Numpad 2";
-    case VK_NUMPAD3: return "Numpad 3";
-    case VK_NUMPAD4: return "Numpad 4";
-    case VK_NUMPAD5: return "Numpad 5";
-    case VK_NUMPAD6: return "Numpad 6";
-    case VK_NUMPAD7: return "Numpad 7";
-    case VK_NUMPAD8: return "Numpad 8";
-    case VK_NUMPAD9: return "Numpad 9";
-    case VK_MULTIPLY: return "Numpad Multiply";
-    case VK_ADD: return "Numpad Add";
-    case VK_SEPARATOR: return "Numpad Separator";
-    case VK_SUBTRACT: return "Numpad Subtract";
-    case VK_DECIMAL: return "Numpad Decimal";
-    case VK_DIVIDE: return "Numpad Divide";
-    case VK_F1: return "F1";
-    case VK_F2: return "F2";
-    case VK_F3: return "F3";
-    case VK_F4: return "F4";
-    case VK_F5: return "F5";
-    case VK_F6: return "F6";
-    case VK_F7: return "F7";
-    case VK_F8: return "F8";
-    case VK_F9: return "F9";
-    case VK_F10: return "F10";
-    case VK_F11: return "F11";
-    case VK_F12: return "F12";
-    case VK_NUMLOCK: return "Num Lock";
-    case VK_SCROLL: return "Scroll Lock";
-    case VK_LSHIFT: return "VK_LSHIFT";
-    case VK_RSHIFT: return "VK_RSHIFT";
-    case VK_LCONTROL: return "VK_LCONTROL";
-    case VK_RCONTROL: return "VK_RCONTROL";
-    case VK_LMENU: return "VK_LMENU";
-    case VK_RMENU: return "VK_RMENU";
-    default: return "Unknown Key";
-    }
+boolean is_up(WPARAM wParam) {
+    return wParam == WM_KEYUP || wParam == WM_SYSKEYUP;
 }
-enum Lockable {
-    shift = 0,
-    alt,
-    ctrl
-};
-bool locables[ctrl + 1] = { false };
-#define EPOCH_DIFFERENCE 11644473600000LL // Difference between 1601 and 1970 in milliseconds
-
-long long get_cur_time() {
-    FILETIME fileTime;
-    ULARGE_INTEGER largeInt;
-
-    // Get the current system time as FILETIME
-    GetSystemTimeAsFileTime(&fileTime);
-
-    // Combine the two 32-bit values into a 64-bit value
-    largeInt.LowPart = fileTime.dwLowDateTime;
-    largeInt.HighPart = fileTime.dwHighDateTime;
-
-    // Convert to milliseconds (from 100-nanosecond intervals) and subtract the epoch difference
-    return (largeInt.QuadPart / 10000) - EPOCH_DIFFERENCE;
+boolean is_down(WPARAM wParam) {
+    return wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN;
 }
+class Key;
+
+
+class MainObject {
+public:
+    HHOOK hHook=0;
+    Key** top_layer=nullptr;
+    Key** cur_layer=nullptr;
+    std::set<int> locked_mods; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
+    std::vector<Key*> active_keys;
+}main_obj;
+
 enum KeyState {
     init = 0, //at the program start
     keydown, //after keydown
     locked,//after some keydown
 };
 
-void send_key(int dwFlags, int vcode) {
-    INPUT input;
-    input.type = INPUT_KEYBOARD;
-    input.ki.wVk = vcode;
-    input.ki.wScan = 0;
-    input.ki.dwFlags = dwFlags;
-    input.ki.time = 0;
-    input.ki.dwExtraInfo = 0;
-    SendInput(1, &input, sizeof(INPUT));
-
-}
 class Key {
 public:
-    virtual void event(int wParam,int vcode) = 0;
+    virtual void event(WPARAM wParam,int vcode) = 0;
 };
-static int wparam_to_eventf(int wParam) {
-    return (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
 
-}
 class ForwardKey:public Key {
 public:
     int forwardvcode;
     ForwardKey(int _forwardvcode) :forwardvcode(_forwardvcode) {
     }
-    void event(int wParam, int vcode) {
-        send_key(wparam_to_eventf(wParam),forwardvcode);
+    void event(WPARAM wParam, int vcode) {
+        send_key(wParam,forwardvcode);
     }
 };
 class HomeRowKey:public Key {
     KeyState state = init;
-    Lockable lockable;
+    int modevcode;
 public:
-    HomeRowKey(Lockable l) :lockable(l) {
+    HomeRowKey(int _modevcode):modevcode(_modevcode) {
     }
-    void event(int wParam, int vcode) {
-        send_key(wparam_to_eventf(wParam), vcode);
+    void event(WPARAM wParam, int vcode) {
+        if (state == init) {
+            if (main_obj.locked_mods.count(modevcode))
+                return send_key(wParam, vcode); //do the default because the mirror homeromod is in effect
+            if (is_up(wParam)) {
+                printf("unexpexted state for homerow"); //hepfule will next get here
+                return send_key(wParam, vcode);
+            }
+            state = keydown;
+            main_obj.locked_mods.insert(modevcode);
+            return send_key(wParam, modevcode);
+        }
+        if (state == keydown) {
+            if (is_up(wParam)) {
+                send_key(wParam, modevcode); //revert the mod
+                send_key(WM_KEYDOWN, vcode); //send the original keym both down and up
+                send_key(WM_KEYUP, vcode);
+                main_obj.locked_mods.erase(modevcode);
+                state = init;
+                return;
+            }
+            send_key(wParam, modevcode); //double dowm on the mode as 
+            state = locked;
+            return;
+        }
+        if (state == locked) {
+            if (is_up(wParam)) {
+                send_key(wParam, modevcode); //revert the mod
+                //dont send the original key because its bein too long
+                main_obj.locked_mods.erase(modevcode);
+                state = init;
+                return;
+            }
+            send_key(wParam, modevcode); //double dowm on the mode as 
+            return;
+        }
     }
 };
+
+
 class LayerKey :public Key {
-    const Key** layer;
+    Key** layer;
+    KeyState state = init;
 public:
     LayerKey(Key** _layer) :layer(_layer) {
     }
-    void event(int wParam, int vcode) {
-        send_key(wparam_to_eventf(wParam), vcode);
+    void event(WPARAM wParam, int vcode) {
+        send_key(wParam, vcode);
+        if (is_down(wParam)) {
+        }
     }
 
 };
@@ -186,19 +122,21 @@ Key** make_nav_layer() {
     ans[','] = new ForwardKey(VK_LEFT);
     return ans;
 }
-Key** make_main_layer(){
+Key** make_top_layer(){
     const auto ans = make_layer();
-    ans['F'] = new HomeRowKey(ctrl);
-    ans['D'] = new HomeRowKey(shift);
-    ans['S'] = new HomeRowKey(alt);
-    ans['J'] = new HomeRowKey(ctrl);
-    ans['K'] = new HomeRowKey(shift);
-    ans['L'] = new HomeRowKey(alt);
+    ans['F'] = new HomeRowKey(VK_CONTROL);
+    ans['D'] = new HomeRowKey(VK_SHIFT);
+    ans['S'] = new HomeRowKey(VK_MENU);
+    ans['J'] = new HomeRowKey(VK_CONTROL);
+    ans['K'] = new HomeRowKey(VK_SHIFT);
+    ans['L'] = new HomeRowKey(VK_MENU);
     ans[' '] = new LayerKey(make_nav_layer());
     return ans;
 }
-Key** const main_layer = make_main_layer();
-Key ** cur_layer = main_layer;
+void setup(){
+    main_obj.top_layer = make_top_layer();
+    main_obj.cur_layer = main_obj.top_layer;
+}
 /*alg:
 * on f keydown: send ctrl on keydown
 * on f keyup: send ctl keyup. state==keydown and passed less that thredhof. send fkeyown+fup
@@ -210,20 +148,20 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         KBDLLHOOKSTRUCT* pKbDllHookStruct = (KBDLLHOOKSTRUCT*)lParam;
         std::cout << wmparm_to_tr(wParam) << ':' << vcode_to_string(pKbDllHookStruct->vkCode) << std::endl;
         auto vcode = pKbDllHookStruct->vkCode;
-        auto key = cur_layer[vcode];
+        auto key = main_obj.cur_layer[vcode];
         if (key== nullptr)
-            return CallNextHookEx(hHook, nCode, wParam, lParam);
+            return CallNextHookEx(main_obj.hHook, nCode, wParam, lParam);
         key->event(wParam, vcode);
         return 1; //suppress original
     }
 
-    return CallNextHookEx(hHook, nCode, wParam, lParam);
+    return CallNextHookEx(main_obj.hHook, nCode, wParam, lParam);
 }
 
 // Function to install the hook
 void InstallHook() {
-    hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
-    if (hHook == NULL) {
+    main_obj.hHook = SetWindowsHookEx(WH_KEYBOARD_LL, LowLevelKeyboardProc, GetModuleHandle(NULL), 0);
+    if (main_obj.hHook == NULL) {
         printf("Failed to install hook! Error: %lu\n", GetLastError());
         exit(EXIT_FAILURE);
     }
@@ -234,15 +172,15 @@ void InstallHook() {
 
 // Function to uninstall the hook
 void UninstallHook() {
-    if (hHook != NULL) {
-        UnhookWindowsHookEx(hHook);
+    if (main_obj.hHook != NULL) {
+        UnhookWindowsHookEx(main_obj.hHook);
         printf("Hook uninstalled successfully!\n");
     }
 }
 
 int main() {
     MSG msg;
-
+    setup();
     // Install the keyboard hook
     InstallHook();
     
