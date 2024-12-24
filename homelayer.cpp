@@ -44,7 +44,12 @@ class Key {
 public:
     virtual void event(WPARAM wParam,int vcode) = 0;
 };
-
+class NopKey :public Key {
+public:
+    void event(WPARAM wParam, int vcode) {
+        cout << " ignored " << flush;
+    }
+};
 class ForwardKey:public Key {
 public:
     int forwardvcode;
@@ -138,11 +143,14 @@ public:
     }
 
 };
-Key** make_layer() {
-    return new Key * [256] { nullptr };
+Key** make_layer(Key *fill) {
+    auto ans = new Key * [256];
+    for (int i = 0; i < 255; i++)
+        ans[i] = fill;
+    return ans;
 }
 Key** make_nav_layer() {
-    const auto ans = make_layer();
+    const auto ans = make_layer(new NopKey());
     ans['J'] = new ForwardKey(VK_UP);
     ans['M'] = new ForwardKey(VK_DOWN);
     ans['N'] = new ForwardKey(VK_LEFT);
@@ -150,7 +158,7 @@ Key** make_nav_layer() {
     return ans;
 }
 Key** make_top_layer(){
-    const auto ans = make_layer();
+    const auto ans = make_layer(nullptr);
     ans['F'] = new HomeRowKey(VK_CONTROL);
     ans['D'] = new HomeRowKey(VK_SHIFT);
     ans['S'] = new HomeRowKey(VK_MENU);
