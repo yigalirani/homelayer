@@ -149,22 +149,38 @@ Key** make_layer(Key *fill) {
         ans[i] = fill;
     return ans;
 }
+void add_left_mods(Key** layer) {
+    layer['F'] = new HomeRowKey(VK_CONTROL);
+    layer['D'] = new HomeRowKey(VK_SHIFT);
+    layer['S'] = new HomeRowKey(VK_MENU);
+}
+void add_buildin_mods(Key** layer) {
+    layer[VK_LCONTROL] = new HomeRowKey(VK_CONTROL);
+    layer[VK_LSHIFT] = new HomeRowKey(VK_SHIFT);
+    layer[VK_LMENU] = new HomeRowKey(VK_MENU);
+    layer[VK_RCONTROL] = new HomeRowKey(VK_CONTROL);
+    layer[VK_RSHIFT] = new HomeRowKey(VK_SHIFT);
+    layer[VK_RMENU] = new HomeRowKey(VK_MENU);
+}
+
 Key** make_nav_layer() {
     const auto ans = make_layer(new NopKey());
     ans['J'] = new ForwardKey(VK_UP);
     ans['M'] = new ForwardKey(VK_DOWN);
     ans['N'] = new ForwardKey(VK_LEFT);
     ans[VK_OEM_COMMA] = new ForwardKey(VK_RIGHT);
+    add_left_mods(ans);
+    add_buildin_mods(ans);
     return ans;
 }
+
 Key** make_top_layer(){
     const auto ans = make_layer(nullptr);
-    ans['F'] = new HomeRowKey(VK_CONTROL);
-    ans['D'] = new HomeRowKey(VK_SHIFT);
-    ans['S'] = new HomeRowKey(VK_MENU);
+    add_left_mods(ans);
     ans['J'] = new HomeRowKey(VK_CONTROL);
     ans['K'] = new HomeRowKey(VK_SHIFT);
     ans['L'] = new HomeRowKey(VK_MENU);
+    add_buildin_mods(ans);
     ans[' '] = new LayerKey(make_nav_layer());
     return ans;
 }
