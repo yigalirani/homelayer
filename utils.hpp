@@ -1,8 +1,10 @@
 #include <iostream>
+#include <sstream>
 #include <string>
 #include <cstring>
 #include <string> 
 #include <algorithm> // For std::max
+#include <iomanip>
 using namespace std;
 static const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
@@ -18,11 +20,16 @@ static const char* wmparm_to_tr(WPARAM parm) {
     default: return "Unknown WM code";
     }
 }
+using namespace std;
+string to_hexstring(int x) {
+    stringstream stream;
+    stream << hex << x;
+    string result(stream.str());
+    return result;
+}
 
 
-
-
-static const char* vcode_to_string(int vcode) {
+static string vcode_to_string(int vcode) {
     static char buffer[2]; // For single-character keys (e.g., 'A', '1')
 
     // Alphanumeric keys
@@ -98,7 +105,8 @@ static const char* vcode_to_string(int vcode) {
     case VK_RCONTROL: return "VK_RCONTROL";
     case VK_LMENU: return "VK_LMENU";
     case VK_RMENU: return "VK_RMENU";
-    default: return "Unknown Key";
+    case VK_OEM_COMMA: return "VK_OEM_COMMA";
+    default: return "unknown "+ to_hexstring(vcode);
     }
 }
 /*int maxOfTwo(size_t a, size_t b) {
@@ -115,7 +123,7 @@ string adjustString(const char* input, int length) {
 }
 static string pcode_to_str(WPARAM wparm, int vcode) {
     string ans=string(wmparm_to_tr(wparm)) + ":" + vcode_to_string(vcode); //add padding here so its always the same width
-    return adjustString(ans.c_str(), 20);
+    return adjustString(ans.c_str(), 30);
 }
 #define EPOCH_DIFFERENCE 11644473600000LL // Difference between 1601 and 1970 in milliseconds
 

@@ -146,7 +146,7 @@ Key** make_nav_layer() {
     ans['J'] = new ForwardKey(VK_UP);
     ans['M'] = new ForwardKey(VK_DOWN);
     ans['N'] = new ForwardKey(VK_LEFT);
-    ans[','] = new ForwardKey(VK_LEFT);
+    ans[VK_OEM_COMMA] = new ForwardKey(VK_RIGHT);
     return ans;
 }
 Key** make_top_layer(){
