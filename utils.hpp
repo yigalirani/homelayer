@@ -8,16 +8,16 @@
 using namespace std;
 static const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
-    case 0x0100: return "WM_KEYDOWN";
-    case 0x0101: return "WM_KEYUP";
-    case 0x0102: return "WM_CHAR";
-    case 0x0103: return "WM_DEADCHAR";
-    case 0x0104: return "WM_SYSKEYDOWN";
-    case 0x0105: return "WM_SYSKEYUP";
-    case 0x0106: return "WM_SYSCHAR";
-    case 0x0107: return "WM_SYSDEADCHAR";
-    case 0x0109: return "WM_UNICHAR";
-    default: return "Unknown WM code";
+    case WM_KEYDOWN: return "DOWN";
+    case WM_KEYUP: return "UP";
+    case WM_CHAR: return "CHAR";
+    case WM_DEADCHAR: return "DCHAR";
+    case WM_SYSKEYDOWN: return "SDOWN";
+    case WM_SYSKEYUP: return "SUP";
+    case WM_SYSCHAR: return "SCHAR";
+    case WM_SYSDEADCHAR: return "SDCHAR";
+    case WM_UNICHAR: return "UNICHAR";
+    default: return "Unknown";
     }
 }
 using namespace std;
@@ -100,30 +100,30 @@ static string vcode_to_string(int vcode) {
      case VK_NUMLOCK: return "Num Lock";
     case VK_SCROLL: return "Scroll Lock";
     case VK_LSHIFT: return "VK_LSHIFT";
-    case VK_RSHIFT: return "VK_RSHIFT";
+    case VK_RSHIFT: return "VK_RSHIFT"; 
     case VK_LCONTROL: return "VK_LCONTROL";
     case VK_RCONTROL: return "VK_RCONTROL";
     case VK_LMENU: return "VK_LMENU";
     case VK_RMENU: return "VK_RMENU";
     case VK_OEM_COMMA: return "VK_OEM_COMMA";
     default: return "unknown "+ to_hexstring(vcode);
-    }
-}
+    }  
+}        
 /*int maxOfTwo(size_t a, size_t b) {
     return (a > b) ? a : b; // Ternary operator to return the larger value
 }*/
 
-string adjustString(const char* input, int length) {
-    int inputLength = std::strlen(input);
+string adjustString(const string &input, int length) {
+    int inputLength = input.length();
 
     if (inputLength > length) {
-        return std::string(input, length);
+        return std::string(input, length); 
     }
     return std::string(input) + std::string(length - inputLength, ' ');
 }
 static string pcode_to_str(WPARAM wparm, int vcode) {
     string ans=string(wmparm_to_tr(wparm)) + ":" + vcode_to_string(vcode); //add padding here so its always the same width
-    return adjustString(ans.c_str(), 30);
+    return adjustString(ans.c_str(), 20);
 }
 #define EPOCH_DIFFERENCE 11644473600000LL // Difference between 1601 and 1970 in milliseconds
 
