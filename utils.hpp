@@ -117,7 +117,7 @@ string adjustString(const string &input, int length) {
     int inputLength = input.length();
 
     if (inputLength > length) {
-        return std::string(input, length); 
+        return input.substr(0,length);
     }
     return std::string(input) + std::string(length - inputLength, ' ');
 }

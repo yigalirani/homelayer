@@ -64,11 +64,14 @@ public:
     }
 };
 class StatefullKey :public Key {
-protected:
-    string name;
     KeyState state = init;
+protected: 
+    string name;
+    KeyState get_state() {
+        return state;
+    }
     void set_state(KeyState _state) {
-        cout  << state_to_string(state) << "-->" << state_to_string(_state);
+        cout  << "-->" << state_to_string(_state);
         state = _state;
     }
 public:
@@ -100,36 +103,36 @@ public:
     HomeRowKey(int _modevcode):modevcode(_modevcode), StatefullKey("HomeRowKey"){
     }               
     void event(WPARAM wParam, int vcode) {
-        if (state == init) {
+        if (get_state()== init) {
             if (main_obj.locked_mods.count(modevcode))
                 return send_key(wParam, vcode); //do the default because the mirror homeromod is in effect
             if (is_up(wParam)) {
                 printf("unexpexted state for homerow"); //hepfule will next get here
                 return send_key(wParam, vcode);
             }   
-            state = keydown;
+            set_state(keydown);
             main_obj.locked_mods.insert(modevcode);
             return send_key(wParam, modevcode);
         }
-        if (state == keydown) {
+        if (get_state()==keydown) {
             if (is_up(wParam)) {
                 send_key(WM_KEYUP, modevcode);
                 send_key(WM_KEYDOWN, vcode); //revert the mod
                 send_key(WM_KEYUP, vcode);
                 main_obj.locked_mods.erase(modevcode);
-                state = init;
+                set_state(init);
                 return;
             }
             send_key(WM_KEYDOWN, modevcode); //double dowm on the mode as 
-            state = locked;
+            set_state(locked);
             return;
         }
-        if (state == locked) {
+        if (get_state() == locked) {
             if (is_up(wParam)) {
                 send_key(WM_KEYUP, modevcode); //revert the mod
                 //dont send the original key because its bein too long
                 main_obj.locked_mods.erase(modevcode);
-                state = init;
+                set_state(init);
                 return;
             }
             send_key(WM_KEYDOWN, modevcode); //double dowm on the mode as 
@@ -144,31 +147,31 @@ public:
     LayerKey(Key** _layer) :layer(_layer), StatefullKey("LayerKey") {
     }
     void event(WPARAM wParam, int vcode) {
-        if (state == init) {
+        if (get_state() == init) {
             if (is_up(wParam)) {
                 printf("unexpexted state for LayerKey"); //hepfule will not get here
                 return send_key(wParam, vcode);
             }
             main_obj.cur_layer = layer;
-            state = keydown;
+            set_state(keydown);
             return;
         } 
-        if (state == keydown) {
+        if (get_state() == keydown) {
             if (is_up(wParam)) {
                 //cout << "layer key up" << flush;
                 send_key(WM_KEYDOWN, vcode);
                 send_key(WM_KEYUP, vcode);
-                state = init;
+                set_state(init);
                 main_obj.cur_layer = main_obj.top_layer;
                 return;
             }
-            state = locked;
+            set_state(locked);
             return;
         }
         //send_key(wParam, vcode);
         if (is_up(wParam)) {
             main_obj.cur_layer = main_obj.top_layer;
-            state = init;
+            set_state(init);
             return;
         }
         //nothing to do on key down
