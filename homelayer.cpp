@@ -63,11 +63,25 @@ public:
         cout << " ignored " << flush;
     }
 };
+#define TIMEOUT 200
 class StatefullKey :public Key {
-    KeyState state = init;
+    KeyState state = init ;
+
+    long long last_update = 0;
+    long long mark_time() {
+        long long cur_time= get_cur_time();
+        long long ans = cur_time - last_update;
+        last_update = cur_time;
+        return ans;
+    } 
 protected: 
     string name;
     KeyState get_state() {
+        long long elapsed = mark_time();
+        if (state != keydown)
+            return state;
+        if (elapsed > TIMEOUT)
+            set_state(locked);
         return state;
     }
     void set_state(KeyState _state) {
