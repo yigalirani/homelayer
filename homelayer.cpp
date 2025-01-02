@@ -4,18 +4,28 @@
 #include <vector>  
 #include <set> 
 #include "utils.hpp"
+#include <cassert>
+struct SendKey {
+    int vcode;
+    int wParam;
+};
 #define HOMELAYER_MAGIC 0xDEADBEEF
-void send_key(WPARAM wParam, int vcode) {
-    INPUT input;
-    input.type = INPUT_KEYBOARD; 
-    input.ki.wVk = vcode;
-    input.ki.wScan = 0;
-    input.ki.dwFlags = (wParam == WM_KEYUP || wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
-    input.ki.time = 0;
-    input.ki.dwExtraInfo = HOMELAYER_MAGIC;
-    cout << ">  "<<pcode_to_str(wParam, vcode) << flush;
-    SendInput(1, &input, sizeof(INPUT));
+
+void send_key(vector<SendKey> keys) {
+	vector<INPUT> inputs;
+	for (auto key : keys) {
+		INPUT input;
+		input.type = INPUT_KEYBOARD;
+		input.ki.wVk = key.vcode;
+		input.ki.wScan = 0;
+		input.ki.dwFlags = (key.wParam == WM_KEYUP || key.wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
+		input.ki.time = 0;
+		input.ki.dwExtraInfo = HOMELAYER_MAGIC;
+		inputs.push_back(input);
+	}
+	SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
 }
+
 bool is_up(WPARAM wParam) {
     return wParam == WM_KEYUP || wParam == WM_SYSKEYUP;
 }
@@ -24,27 +34,36 @@ bool is_down(WPARAM wParam) {
 }
 class Key;
 
+class StatefullKey;
 
 class MainObject {
 public:
     HHOOK hHook=0;
     Key** top_layer=nullptr;
     Key** cur_layer=nullptr;
-    std::set<int> locked_mods; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
-    std::vector<Key*> active_keys;
+    StatefullKey*active_mods[4]; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
     Key* nop = nullptr;
 }main_obj;
-
+enum Mod {
+    mod_shift = 0,
+    mod_control,
+    mod_alt,
+    mod_layer1
+};
 enum KeyState {
     init = 0, //at the program start
     keydown, //after keydown
-    locked,//after some keydown
+    keydown_elapsed,//after keydown and timeout
+	realized//some non-mode key was pressed -send the aaprropriate keydown
 };
+
+
 const char* state_to_string(KeyState state) {
     switch (state) {
         case KeyState::init: return "init";
         case KeyState::keydown: return "keydown";
-        case KeyState::locked: return "locked";
+        case KeyState::keydown_elapsed: return "keydown_el";
+        case KeyState::realized: return "realized";
         default: return "unknown";
     }
 }
@@ -64,8 +83,13 @@ public:
     }
 };
 #define TIMEOUT 200
+
+void send_key_realize(vector<SendKey> keys);
 class StatefullKey :public Key {
+protected:
     KeyState state = init ;
+    Mod mod;
+    string name;
 
     long long last_update = 0;
     long long mark_time() {
@@ -74,30 +98,54 @@ class StatefullKey :public Key {
         last_update = cur_time;
         return ans;
     } 
-protected: 
-    string name;
+    void deactivate() {
+        main_obj.active_mods[mod] = nullptr;
+        set_state(init);
+    }
+    void activate() {
+        set_state(keydown);
+        main_obj.active_mods[mod] = this;
+    }
     KeyState get_state() {
         long long elapsed = mark_time();
-        if (state != keydown)
-            return state;
-        if (elapsed > TIMEOUT)
-            set_state(locked);
+        if (state == keydown && elapsed > TIMEOUT)
+            set_state(keydown_elapsed);
         return state;
     }
     void set_state(KeyState _state) {
         cout  << "-->" << state_to_string(_state);
         state = _state;
     }
+    bool try_to_activate(WPARAM wParam, int vcode) {
+        if (main_obj.active_mods[mod]) {
+            send_key({ {.vcode = vcode,.wParam = WM_KEYUP} }); //do the default because the mirror homeromod is in effect
+            return false;
+        }
+        assert(!is_up(wParam));
+        activate();
+		return true;
+    }
 public:
-    StatefullKey(const char* _name) :name(_name) {
+    StatefullKey(const char* _name,Mod _mod) :name(_name,mod) {
     }  
     string get_full_name() {
         return name + "(" +state_to_string(state)+ ")";
 
     }
-
+    virtual int realize() = 0;
 };
-
+void send_key_realize(vector<SendKey> keys) {
+    for (auto mod : main_obj.active_mods) {
+        if (mod == nullptr)
+            continue;
+        int vcode = mod->realize();
+        if (vcode == -1)
+            continue;
+        const SendKey key = { .vcode = vcode,.wParam = WM_KEYDOWN };
+        keys.insert(keys.begin(), key);
+    }
+	send_key(keys);
+}
 class ForwardKey:public Key {
 public:
     int forwardvcode;
@@ -108,48 +156,36 @@ public:
         return "ForwardKey(" + vcode_to_string(forwardvcode) + ")";
     }
     void event(WPARAM wParam, int vcode) {
-        send_key(wParam,forwardvcode);
+        send_key({ { .vcode = forwardvcode,.wParam=wParam} });
     }
 };
 class HomeRowKey:public StatefullKey {
-    int modevcode;
 public:
-    HomeRowKey(int _modevcode):modevcode(_modevcode), StatefullKey("HomeRowKey"){
+    HomeRowKey(Mod _mod):StatefullKey("HomeRowKey",_mod){
     }               
     void event(WPARAM wParam, int vcode) {
-        if (get_state()== init) {
-            if (main_obj.locked_mods.count(modevcode))
-                return send_key(wParam, vcode); //do the default because the mirror homeromod is in effect
+        const auto state = get_state();
+        switch (state) {
+        case init:
+            try_to_activate(wParam, vcode);
+            return; //dont send the key for now.
+
+        case keydown:
+            assert(main_obj.active_mods[mod] == this);
             if (is_up(wParam)) {
-                printf("unexpexted state for homerow"); //hepfule will next get here
-                return send_key(wParam, vcode);
-            }   
-            set_state(keydown);
-            main_obj.locked_mods.insert(modevcode);
-            return send_key(wParam, modevcode);
-        }
-        if (get_state()==keydown) {
-            if (is_up(wParam)) {
-                send_key(WM_KEYUP, modevcode);
-                send_key(WM_KEYDOWN, vcode); //revert the mod
-                send_key(WM_KEYUP, vcode);
-                main_obj.locked_mods.erase(modevcode);
-                set_state(init);
+                deactivate();
+                send_key_realize({
+                    {.vcode = vcode ,.wParam = WM_KEYDOWN},
+                    {.vcode = vcode,.wParam = WM_KEYUP}
+                    });
                 return;
             }
-            send_key(WM_KEYDOWN, modevcode); //double dowm on the mode as 
-            set_state(locked);
+            set_state(keydown_elapsed); //where keyup does not send nothing
             return;
-        }
-        if (get_state() == locked) {
-            if (is_up(wParam)) {
-                send_key(WM_KEYUP, modevcode); //revert the mod
-                //dont send the original key because its bein too long
-                main_obj.locked_mods.erase(modevcode);
-                set_state(init);
-                return;
-            }
-            send_key(WM_KEYDOWN, modevcode); //double dowm on the mode as 
+        case realized:
+        case keydown_elapsed: //do nothing
+            if (is_up(wParam))
+                return deactivate();
             return;
         }
     }
@@ -161,34 +197,30 @@ public:
     LayerKey(Key** _layer) :layer(_layer), StatefullKey("LayerKey") {
     }
     void event(WPARAM wParam, int vcode) {
-        if (get_state() == init) {
-            if (is_up(wParam)) {
-                printf("unexpexted state for LayerKey"); //hepfule will not get here
-                return send_key(wParam, vcode);
-            }
-            main_obj.cur_layer = layer;
-            set_state(keydown);
+        const auto state = get_state();
+        switch (state) {
+        case init:
+            if (try_to_activate(wParam, vcode))
+                main_obj.cur_layer = layer;
             return;
-        } 
-        if (get_state() == keydown) {
-            if (is_up(wParam)) {
+        case keydown:
+            if (is_up(wParam)) { //this means that we used the key as regular key which might have mods to realize
                 //cout << "layer key up" << flush;
-                send_key(WM_KEYDOWN, vcode);
-                send_key(WM_KEYUP, vcode);
-                set_state(init);
+                send_key_realize({
+                    {.vcode = vcode ,.wParam = WM_KEYDOWN},
+                    {.vcode = vcode,.wParam = WM_KEYUP}
+                    });
+                deactivate();
                 main_obj.cur_layer = main_obj.top_layer;
                 return;
             }
-            set_state(locked);
+            set_state(keydown_elapsed);
             return;
+        case realized:
+        case keydown_elapsed: //do nothing
+            if (is_up(wParam))
+                return deactivate();
         }
-        //send_key(wParam, vcode);
-        if (is_up(wParam)) {
-            main_obj.cur_layer = main_obj.top_layer;
-            set_state(init);
-            return;
-        }
-        //nothing to do on key down
 
     }
 
@@ -200,17 +232,17 @@ Key** make_layer() {
     return ans;
 }
 void add_left_mods(Key** layer) {
-    layer['F'] = new HomeRowKey(VK_CONTROL);
-    layer['D'] = new HomeRowKey(VK_SHIFT);
-    layer['S'] = new HomeRowKey(VK_MENU);
+    layer['F'] = new HomeRowKey(mod_control );
+    layer['D'] = new HomeRowKey(mod_shift);
+    layer['S'] = new HomeRowKey(mod_alt);
 }
 void add_buildin_mods(Key** layer) {
-    layer[VK_LCONTROL] = new HomeRowKey(VK_CONTROL);
-    layer[VK_LSHIFT] = new HomeRowKey(VK_SHIFT);
-    layer[VK_LMENU] = new HomeRowKey(VK_MENU);
-    layer[VK_RCONTROL] = new HomeRowKey(VK_CONTROL);
-    layer[VK_RSHIFT] = new HomeRowKey(VK_SHIFT);
-    layer[VK_RMENU] = new HomeRowKey(VK_MENU);
+    layer[VK_LCONTROL] = new HomeRowKey(mod_control);
+    layer[VK_LSHIFT] = new HomeRowKey(mod_shift);
+    layer[VK_LMENU] = new HomeRowKey(mod_alt);
+    layer[VK_RCONTROL] = new HomeRowKey(mod_control);
+    layer[VK_RSHIFT] = new HomeRowKey(mod_shift);
+    layer[VK_RMENU] = new HomeRowKey(mod_alt);
 }
 
 Key** make_nav_layer() {
@@ -227,9 +259,9 @@ Key** make_nav_layer() {
 Key** make_top_layer(){
     const auto ans = make_layer();
     add_left_mods(ans);
-    ans['J'] = new HomeRowKey(VK_CONTROL);
-    ans['K'] = new HomeRowKey(VK_SHIFT);
-    ans['L'] = new HomeRowKey(VK_MENU);
+    ans['J'] = new HomeRowKey(mod_control);
+    ans['K'] = new HomeRowKey(mod_shift);
+    ans['L'] = new HomeRowKey(mod_alt);
     add_buildin_mods(ans);
     ans[' '] = new LayerKey(make_nav_layer());
     return ans;
