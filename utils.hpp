@@ -114,7 +114,7 @@ static string vcode_to_string(int vcode) {
 }*/
 
 string adjustString(const string &input, int length) {
-    int inputLength = input.length();
+    size_t inputLength = input.length();
 
     if (inputLength > length) {
         return input.substr(0,length);

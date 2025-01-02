@@ -7,7 +7,7 @@
 #include <cassert>
 struct SendKey {
     int vcode;
-    int wParam;
+    WPARAM wParam;
 };
 #define HOMELAYER_MAGIC 0xDEADBEEF
 
@@ -23,7 +23,7 @@ void send_key(vector<SendKey> keys) {
 		input.ki.dwExtraInfo = HOMELAYER_MAGIC;
 		inputs.push_back(input);
 	}
-	SendInput(inputs.size(), inputs.data(), sizeof(INPUT));
+	SendInput((UINT)inputs.size(), inputs.data(), sizeof(INPUT));
 }
 
 bool is_up(WPARAM wParam) {
@@ -102,7 +102,7 @@ protected:
         main_obj.active_mods[mod] = nullptr;
         set_state(init);
     }
-    void activate() {
+	void activate() {//used only once, but wanted symeticy with deactivate which is used multiple times
         set_state(keydown);
         main_obj.active_mods[mod] = this;
     }
@@ -116,29 +116,56 @@ protected:
         cout  << "-->" << state_to_string(_state);
         state = _state;
     }
-    bool try_to_activate(WPARAM wParam, int vcode) {
-        if (main_obj.active_mods[mod]) {
-            send_key({ {.vcode = vcode,.wParam = WM_KEYUP} }); //do the default because the mirror homeromod is in effect
-            return false;
-        }
-        assert(!is_up(wParam));
-        activate();
-		return true;
-    }
+
+
 public:
     StatefullKey(const char* _name,Mod _mod) :name(_name,mod) {
     }  
+    virtual void on_activate(WPARAM wParam, int vcode) = 0;
+    virtual void on_deactivate() = 0;
+    virtual int on_realize() = 0;
+    void event(WPARAM wParam, int vcode) {
+        const auto state = get_state();
+        switch (state) {
+        case init:
+            if (main_obj.active_mods[mod]) {
+                send_key({ {.vcode = vcode,.wParam = WM_KEYUP} }); //do the default because the mirror homeromod is in effect
+                return;
+            }
+            assert(!is_up(wParam));
+			activate();
+            on_activate(wParam, vcode);
+            return;
+        case keydown:
+            if (is_up(wParam)) { //this means that we used the key as regular key which might have mods to realize
+                //cout << "layer key up" << flush;
+                send_key_realize({
+                    {.vcode = vcode ,.wParam = WM_KEYDOWN},
+                    {.vcode = vcode,.wParam = WM_KEYUP}
+                    });
+                deactivate();
+                on_deactivate();
+                return;
+            }
+            set_state(keydown_elapsed);
+            return;
+        case realized:
+        case keydown_elapsed: //do nothing
+            if (is_up(wParam))
+                return deactivate();
+        }
+
+    }
     string get_full_name() {
         return name + "(" +state_to_string(state)+ ")";
 
     }
-    virtual int realize() = 0;
 };
 void send_key_realize(vector<SendKey> keys) {
     for (auto mod : main_obj.active_mods) {
         if (mod == nullptr)
             continue;
-        int vcode = mod->realize();
+        int vcode = mod->on_realize();
         if (vcode == -1)
             continue;
         const SendKey key = { .vcode = vcode,.wParam = WM_KEYDOWN };
@@ -156,73 +183,41 @@ public:
         return "ForwardKey(" + vcode_to_string(forwardvcode) + ")";
     }
     void event(WPARAM wParam, int vcode) {
-        send_key({ { .vcode = forwardvcode,.wParam=wParam} });
+        send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} });
     }
 };
-class HomeRowKey:public StatefullKey {
+class HomeRowKey :public StatefullKey {
 public:
-    HomeRowKey(Mod _mod):StatefullKey("HomeRowKey",_mod){
-    }               
-    void event(WPARAM wParam, int vcode) {
-        const auto state = get_state();
-        switch (state) {
-        case init:
-            try_to_activate(wParam, vcode);
-            return; //dont send the key for now.
-
-        case keydown:
-            assert(main_obj.active_mods[mod] == this);
-            if (is_up(wParam)) {
-                deactivate();
-                send_key_realize({
-                    {.vcode = vcode ,.wParam = WM_KEYDOWN},
-                    {.vcode = vcode,.wParam = WM_KEYUP}
-                    });
-                return;
-            }
-            set_state(keydown_elapsed); //where keyup does not send nothing
-            return;
-        case realized:
-        case keydown_elapsed: //do nothing
-            if (is_up(wParam))
-                return deactivate();
-            return;
-        }
+    HomeRowKey(Mod _mod) :StatefullKey("HomeRowKey", _mod) {
     }
+    void on_activate(WPARAM wParam, int vcode) {
+    }
+    void on_deactivate() {
+    }
+	int on_realize() {
+        if (get_state() == realized)
+            return -1;
+		set_state(realized);
+		return mod + 16; //because
+	}
+
 };
 
 class LayerKey :public StatefullKey {
     Key** layer;
 public:
-    LayerKey(Key** _layer) :layer(_layer), StatefullKey("LayerKey") {
+    LayerKey(Key** _layer,Mod _mod) :layer(_layer), StatefullKey("LayerKey",_mod) {
     }
-    void event(WPARAM wParam, int vcode) {
-        const auto state = get_state();
-        switch (state) {
-        case init:
-            if (try_to_activate(wParam, vcode))
-                main_obj.cur_layer = layer;
-            return;
-        case keydown:
-            if (is_up(wParam)) { //this means that we used the key as regular key which might have mods to realize
-                //cout << "layer key up" << flush;
-                send_key_realize({
-                    {.vcode = vcode ,.wParam = WM_KEYDOWN},
-                    {.vcode = vcode,.wParam = WM_KEYUP}
-                    });
-                deactivate();
-                main_obj.cur_layer = main_obj.top_layer;
-                return;
-            }
-            set_state(keydown_elapsed);
-            return;
-        case realized:
-        case keydown_elapsed: //do nothing
-            if (is_up(wParam))
-                return deactivate();
-        }
+    void on_activate(WPARAM wParam, int vcode) {
+        main_obj.cur_layer = layer;
+    }
+    void on_deactivate() {
+        main_obj.cur_layer = main_obj.top_layer;
+    }
+    int on_realize() {
+        return -1;
+    }
 
-    }
 
 };
 Key** make_layer() {
@@ -263,7 +258,7 @@ Key** make_top_layer(){
     ans['K'] = new HomeRowKey(mod_shift);
     ans['L'] = new HomeRowKey(mod_alt);
     add_buildin_mods(ans);
-    ans[' '] = new LayerKey(make_nav_layer());
+    ans[' '] = new LayerKey(make_nav_layer(), mod_layer1);
     return ans;
 }
 void setup(){
