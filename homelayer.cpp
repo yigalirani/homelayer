@@ -22,6 +22,7 @@ void send_key(vector<SendKey> keys) {
 		input.ki.time = 0;
 		input.ki.dwExtraInfo = HOMELAYER_MAGIC;
 		inputs.push_back(input);
+		cout << "..."<<pcode_to_str(key.wParam, key.vcode) <<"..."<< flush;
 	}
 	SendInput((UINT)inputs.size(), inputs.data(), sizeof(INPUT));
 }
@@ -41,6 +42,7 @@ public:
     HHOOK hHook=0;
     Key** top_layer=nullptr;
     Key** cur_layer=nullptr;
+    Key** active_keys = nullptr;
     StatefullKey*active_mods[4]; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
     Key* nop = nullptr;
 }main_obj;
@@ -101,6 +103,7 @@ protected:
     void deactivate() {
         main_obj.active_mods[mod] = nullptr;
         set_state(init);
+        on_deactivate();
     }
 	void activate() {//used only once, but wanted symeticy with deactivate which is used multiple times
         set_state(keydown);
@@ -119,7 +122,7 @@ protected:
 
 
 public:
-    StatefullKey(const char* _name,Mod _mod) :name(_name,mod) {
+    StatefullKey(const char* _name,Mod _mod) :name(_name), mod(_mod) {
     }  
     virtual void on_activate(WPARAM wParam, int vcode) = 0;
     virtual void on_deactivate() = 0;
@@ -129,7 +132,7 @@ public:
         switch (state) {
         case init:
             if (main_obj.active_mods[mod]) {
-                send_key({ {.vcode = vcode,.wParam = WM_KEYUP} }); //do the default because the mirror homeromod is in effect
+                send_key_realize({ {.vcode = vcode,.wParam = wParam} }); //do the default because the mirror homeromod is in effect
                 return;
             }
             assert(!is_up(wParam));
@@ -144,7 +147,6 @@ public:
                     {.vcode = vcode,.wParam = WM_KEYUP}
                     });
                 deactivate();
-                on_deactivate();
                 return;
             }
             set_state(keydown_elapsed);
@@ -186,6 +188,15 @@ public:
         send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} });
     }
 };
+class Repeater :public Key {
+public:
+    string get_full_name() {
+        return "Rep";
+    }
+    void event(WPARAM wParam, int vcode) {
+        send_key_realize({ {.vcode = vcode,.wParam = wParam} });
+    }
+};
 class HomeRowKey :public StatefullKey {
 public:
     HomeRowKey(Mod _mod) :StatefullKey("HomeRowKey", _mod) {
@@ -209,21 +220,22 @@ public:
     LayerKey(Key** _layer,Mod _mod) :layer(_layer), StatefullKey("LayerKey",_mod) {
     }
     void on_activate(WPARAM wParam, int vcode) {
+        cout << "on nav" << flush;
         main_obj.cur_layer = layer;
     }
     void on_deactivate() {
+        cout << "on top" << flush; 
         main_obj.cur_layer = main_obj.top_layer;
-    }
+    }  
     int on_realize() {
         return -1;
     }
 
-
 };
-Key** make_layer() {
+Key** make_layer(Key *fill) {
     auto ans = new Key * [256];
     for (int i = 0; i < 255; i++)
-        ans[i] = nullptr;
+        ans[i] = fill;
     return ans;
 }
 void add_left_mods(Key** layer) {
@@ -232,6 +244,7 @@ void add_left_mods(Key** layer) {
     layer['S'] = new HomeRowKey(mod_alt);
 }
 void add_buildin_mods(Key** layer) {
+    return; //not needed anymore. todo : delete
     layer[VK_LCONTROL] = new HomeRowKey(mod_control);
     layer[VK_LSHIFT] = new HomeRowKey(mod_shift);
     layer[VK_LMENU] = new HomeRowKey(mod_alt);
@@ -241,18 +254,18 @@ void add_buildin_mods(Key** layer) {
 }
 
 Key** make_nav_layer() {
-    const auto ans = make_layer();
+    const auto ans = make_layer(nullptr);
     ans['J'] = new ForwardKey(VK_UP);
     ans['M'] = new ForwardKey(VK_DOWN);
     ans['N'] = new ForwardKey(VK_LEFT);
     ans[VK_OEM_COMMA] = new ForwardKey(VK_RIGHT);
-    add_left_mods(ans);
+    //add_left_mods(ans);
     add_buildin_mods(ans);
     return ans;
 }
 
 Key** make_top_layer(){
-    const auto ans = make_layer();
+    const auto ans = make_layer(new Repeater());
     add_left_mods(ans);
     ans['J'] = new HomeRowKey(mod_control);
     ans['K'] = new HomeRowKey(mod_shift);
@@ -263,6 +276,7 @@ Key** make_top_layer(){
 }
 void setup(){
     main_obj.top_layer = make_top_layer();
+    main_obj.active_keys = make_layer(nullptr);
     main_obj.cur_layer = main_obj.top_layer;
     main_obj.nop = new NopKey();
 }
@@ -273,7 +287,10 @@ void setup(){
 
 // Callback function for the low-level keyboard hook
 Key* get_key(int vcode) {
-    auto ans= main_obj.cur_layer[vcode];
+    auto ans = main_obj.active_keys[vcode];
+    if (ans != nullptr)
+        return ans;
+    ans= main_obj.cur_layer[vcode];
     if (ans != nullptr)
         return ans;
      
@@ -295,8 +312,14 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
             return false; //skipped to avoid proccesing      our own synthetic 
         auto vcode = pKbDllHookStruct->vkCode; 
         auto key = get_key(vcode);
-        if (key == nullptr)
-            return false;
+        if (is_up(wParam))
+            main_obj.active_keys[vcode] = nullptr;
+        else
+            main_obj.active_keys[vcode] = key;
+
+		assert(key);
+        //if (key == nullptr) //todo: use the send key functiopn so realize function is called
+         //   return false;
         const string start = adjustString(key->get_full_name(), 20) + " : ";
         std::cout << endl << start << pcode_to_str(wParam, vcode) << flush;
         key->event(wParam, vcode);

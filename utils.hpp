@@ -1,3 +1,4 @@
+#include <windows.h>
 #include <iostream>
 #include <sstream>
 #include <string>
@@ -123,6 +124,7 @@ string adjustString(const string &input, int length) {
 }
 static string pcode_to_str(WPARAM wparm, int vcode) {
     string ans=string(wmparm_to_tr(wparm)) + ":" + vcode_to_string(vcode); //add padding here so its always the same width
+    return ans;
     return adjustString(ans.c_str(), 20);
 }
 #define EPOCH_DIFFERENCE 11644473600000LL // Difference between 1601 and 1970 in milliseconds
