@@ -9,8 +9,8 @@
 using namespace std;
 static const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
-    case WM_KEYDOWN: return "DOWN";
-    case WM_KEYUP: return "UP";
+    case WM_KEYDOWN: return "//";
+    case WM_KEYUP: return "\\\\";
     case WM_CHAR: return "CHAR";
     case WM_DEADCHAR: return "DCHAR";
     case WM_SYSKEYDOWN: return "SDOWN";
@@ -123,7 +123,7 @@ string adjustString(const string &input, int length) {
     return std::string(input) + std::string(length - inputLength, ' ');
 }
 static string pcode_to_str(WPARAM wparm, int vcode) {
-    string ans=string(wmparm_to_tr(wparm)) + ":" + vcode_to_string(vcode); //add padding here so its always the same width
+    string ans=string(wmparm_to_tr(wparm)) + "-" + vcode_to_string(vcode); //add padding here so its always the same width
     return ans;
     return adjustString(ans.c_str(), 20);
 }

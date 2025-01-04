@@ -22,7 +22,7 @@ void send_key(vector<SendKey> keys) {
 		input.ki.time = 0;
 		input.ki.dwExtraInfo = HOMELAYER_MAGIC;
 		inputs.push_back(input);
-		cout << "..."<<pcode_to_str(key.wParam, key.vcode) <<"..."<< flush;
+		cout << "\033[32m "<< pcode_to_str(key.wParam, key.vcode) << "\033[0m" << flush;
 	}
 	SendInput((UINT)inputs.size(), inputs.data(), sizeof(INPUT));
 }
@@ -142,19 +142,21 @@ public:
         case keydown:
             if (is_up(wParam)) { //this means that we used the key as regular key which might have mods to realize
                 //cout << "layer key up" << flush;
+                deactivate();
                 send_key_realize({
                     {.vcode = vcode ,.wParam = WM_KEYDOWN},
                     {.vcode = vcode,.wParam = WM_KEYUP}
                     });
-                deactivate();
+
                 return;
             }
             set_state(keydown_elapsed);
             return;
         case realized:
-        case keydown_elapsed: //do nothing
+        case keydown_elapsed:
             if (is_up(wParam))
                 return deactivate();
+            //dont send nothing here because this key was functioned as mod
         }
 
     }
@@ -321,7 +323,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         //if (key == nullptr) //todo: use the send key functiopn so realize function is called
          //   return false;
         const string start = adjustString(key->get_full_name(), 20) + " : ";
-        std::cout << endl << start << pcode_to_str(wParam, vcode) << flush;
+        std::cout << endl << start << "\033[93m " << pcode_to_str(wParam, vcode) << "\033[0m" << flush;
         key->event(wParam, vcode);
         return true;
     }; 
