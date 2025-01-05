@@ -120,7 +120,6 @@ protected:
         state = _state;
     }
 
-
 public:
     StatefullKey(const char* _name,Mod _mod) :name(_name), mod(_mod) {
     }  
