@@ -102,8 +102,8 @@ protected:
     } 
     void deactivate() {
         main_obj.active_mods[mod] = nullptr;
-        set_state(init);
         on_deactivate();
+        set_state(init);
     }
 	void activate() {//used only once, but wanted symeticy with deactivate which is used multiple times
         set_state(keydown);
@@ -206,6 +206,10 @@ public:
     void on_activate(WPARAM wParam, int vcode) {
     }
     void on_deactivate() {
+        if (get_state() != realized)
+            send_key({
+              {.vcode = mod + 16,.wParam = WM_KEYUP}
+                });
     }
 	int on_realize() {
         if (get_state() == realized)
