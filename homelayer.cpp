@@ -206,9 +206,9 @@ public:
     void on_activate(WPARAM wParam, int vcode) {
     }
     void on_deactivate() {
-        if (get_state() != realized)
+        if (get_state() == realized)
             send_key({
-              {.vcode = mod + 16,.wParam = WM_KEYUP}
+              {.vcode = mod + 16,.wParam = WM_KEYUP} //to match the keydown sent on_realize
                 });
     }
 	int on_realize() {
