@@ -1,0 +1,256 @@
+Hook installed successfully!
+
+Rep                  : [93m \\-Enter[0m[32m \\-Enter[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m //-C[0m-->realized[32m //-Shift[0m[32m //-C[0m
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+LayerKey(init)       : [93m //-Space[0m-->keydownon nav
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+LayerKey(keydown)    : [93m \\-Space[0mon top-->init[32m //-Space[0m[32m \\-Space[0m
+Rep                  : [93m //-unknown dc[0m[32m //-unknown dc[0m
+Rep                  : [93m \\-unknown dc[0m[32m \\-unknown dc[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m \\-C[0m[32m \\-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+HomeRowKey(keydown)  : [93m \\-D[0m-->init[32m //-D[0m[32m \\-D[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
+HomeRowKey(init)     : [93m //-D[0m-->keydown
+Rep                  : [93m \\-C[0m-->realized[32m //-Shift[0m[32m \\-C[0m
+HomeRowKey(realized) : [93m \\-D[0m[32m \\-Shift[0m-->init
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-Backspace[0m[32m //-Backspace[0m
+Rep                  : [93m \\-Backspace[0m[32m \\-Backspace[0m
+Rep                  : [93m //-VK_LCONTROL[0m[32m //-VK_LCONTROL[0m
+Rep                  : [93m //-VK_LCONTROL[0m[32m //-VK_LCONTROL[0m
+Rep                  : [93m //-VK_LCONTROL[0m[32m //-VK_LCONTROL[0m
+Rep                  : [93m //-VK_LCONTROL[0m[32m //-VK_LCONTROL[0m
+Rep                  : [93m //-VK_LCONTROL[0m[32m //-VK_LCONTROL[0m
+Rep                  : [93m //-VK_LCONTROL[0m[32m //-VK_LCONTROL[0m
+Rep                  : [93m //-B[0m[32m //-B[0m
+Rep                  : [93m \\-B[0m[32m \\-B[0m
+Rep                  : [93m //-C[0m[32m //-C[0m
