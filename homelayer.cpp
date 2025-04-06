@@ -72,7 +72,7 @@ const char* state_to_string(KeyState state) {
 
 class Key {
 public:
-    virtual void event(WPARAM wParam,int vcode) = 0;
+    virtual void event(WPARAM wParam,int vcode,long long event_time) = 0;
     virtual string get_full_name() = 0;
 };
 class NopKey :public Key {
@@ -80,7 +80,7 @@ public:
     string get_full_name() {
         return "NopKey";
     }
-    void event(WPARAM wParam, int vcode) {
+    void event(WPARAM wParam, int vcode, long long event_time) {
         cout << " ignored " << flush;
     }
 };
@@ -93,17 +93,17 @@ protected:
     Mod mod;
     string name;
     long long keydown_time = 0;
-    void deactivate() {
+    void deactivate(long long event_time) {
         main_obj.active_mods[mod] = nullptr;
-        on_deactivate();
+        on_deactivate(event_time);
         set_state(init);
     }
 	void activate() {//used only once, but wanted symeticy with deactivate which is used multiple times
         set_state(keydown);
         main_obj.active_mods[mod] = this;
     }
-    KeyState get_state() {
-        if (state == keydown && get_cur_time() - keydown_time > TIMEOUT)
+    KeyState get_state(long long event_time) {
+        if (state == keydown && event_time- keydown_time > TIMEOUT)
             set_state(keydown_elapsed);
         return state;
     }
@@ -117,25 +117,25 @@ public:
     StatefullKey(const char* _name,Mod _mod) :name(_name), mod(_mod) {
     }  
     virtual void on_activate(WPARAM wParam, int vcode) = 0;
-    virtual void on_deactivate() = 0;
+    virtual void on_deactivate(long long event_time) = 0;
     virtual int on_realize(long long sender_keydown_time) = 0;
-    void event(WPARAM wParam, int vcode) {
-        const auto state = get_state();
+    void event(WPARAM wParam, int vcode,long long event_time) {
+        const auto state = get_state(event_time);
         switch (state) {
         case init:
             if (main_obj.active_mods[mod]) {
-                send_key_realize({ {.vcode = vcode,.wParam = wParam} },get_cur_time()); //do the default because the mirror homeromod is in effect
+                send_key_realize({ {.vcode = vcode,.wParam = wParam} }, event_time); //do the default because the mirror homeromod is in effect
                 return;
             }
             assert(!is_up(wParam));
-			keydown_time = get_cur_time();
+            keydown_time = event_time;
 			activate();
             on_activate(wParam, vcode);
             return;
         case keydown:
             if (is_up(wParam)) { //this means that we used the key as regular key which might have mods to realize
                 //cout << "layer key up" << flush;
-                deactivate();
+                deactivate(event_time);
                 send_key_realize({
                     {.vcode = vcode ,.wParam = WM_KEYDOWN},
                     {.vcode = vcode,.wParam = WM_KEYUP}
@@ -148,7 +148,7 @@ public:
         case realized:
         case keydown_elapsed:
             if (is_up(wParam))
-                return deactivate();
+                return deactivate(event_time);
             //dont send nothing here because this key was functioned as mod
         }
 
@@ -179,8 +179,8 @@ public:
     string get_full_name() {
         return "ForwardKey(" + vcode_to_string(forwardvcode) + ")";
     }
-    void event(WPARAM wParam, int vcode) {
-        send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} },get_cur_time());
+    void event(WPARAM wParam, int vcode,long long event_time) {
+        send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} },event_time);
     }
 };
 class Repeater :public Key {
@@ -188,8 +188,8 @@ public:
     string get_full_name() {
         return "Rep";
     }
-    void event(WPARAM wParam, int vcode) {
-        send_key_realize({ {.vcode = vcode,.wParam = wParam} }, get_cur_time());
+    void event(WPARAM wParam, int vcode, long long event_time) {
+        send_key_realize({ {.vcode = vcode,.wParam = wParam} }, event_time);
     }
 };
 class HomeRowKey :public StatefullKey {
@@ -198,14 +198,14 @@ public:
     }
     void on_activate(WPARAM wParam, int vcode) {
     }
-    void on_deactivate() {
-        if (get_state() == realized)
+    void on_deactivate(long long event_time) {
+        if (get_state(event_time) == realized)
             send_key({
               {.vcode = mod + 16,.wParam = WM_KEYUP} //to match the keydown sent on_realize
                 });
     }
 	int on_realize(long long sender_keydown_time) {
-        if (get_state() == realized )
+        if (get_state(sender_keydown_time) == realized )
             return -1;
         auto diff = sender_keydown_time - keydown_time;
 		cout << "diff" << diff << flush;
@@ -234,7 +234,7 @@ public:
         cout << "on nav" << flush;
         main_obj.cur_layer = layer;
     }
-    void on_deactivate() {
+    void on_deactivate(long long event_time) {
         cout << "on top" << flush; 
         main_obj.cur_layer = main_obj.top_layer;
     }  
@@ -337,7 +337,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
          //   return false;
         const string start = adjustString(key->get_full_name(), 20) + " : ";
         std::cout << endl << start << "\033[93m " << pcode_to_str(wParam, vcode) << "\033[0m" << flush;
-        key->event(wParam, vcode);
+        key->event(wParam, vcode,get_cur_time());
         return true;
     }; 
     if (doit())
