@@ -6,6 +6,7 @@
 #include <string> 
 #include <algorithm> // For std::max
 #include <iomanip>
+#include <nlohmann/json.hpp>
 using namespace std;
 static const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
@@ -141,4 +142,48 @@ long long get_cur_time() {
 
     // Convert to milliseconds (from 100-nanosecond intervals) and subtract the epoch difference
     return (largeInt.QuadPart / 10000) - EPOCH_DIFFERENCE;
+}
+class Event {
+public:
+    WPARAM wParam;
+    DWORD vcode;
+    long long t;
+};
+std::vector<Event> loadEventsFromFile(const std::string& filename) {
+	cout << "Loading events from file: " << filename << endl;
+    std::vector<Event> events;
+
+    // Open the file
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        std::cerr << "Unable to open file: " << filename << std::endl;
+        return events;
+    }
+
+    // Parse the JSON
+    nlohmann::json j;
+    try {
+        file >> j;
+        cout << file.rdbuf();
+    }
+    catch (const std::exception& e) {
+        std::cerr << "Failed to parse JSON: " << e.what() << std::endl;
+        return events;
+    }
+
+    // Parse each object in the array
+    for (const auto& item : j) {
+        Event e;
+        try {
+            e.wParam = item.at("wParam").get<WPARAM>();
+            e.vcode = item.at("vcode").get<DWORD>();
+            e.t = item.at("t").get<long long>();
+            events.push_back(e);
+        }
+        catch (const std::exception& e) {
+            std::cerr << "Error parsing Event: " << e.what() << std::endl;
+        }
+    }
+
+    return events;
 }

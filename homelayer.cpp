@@ -1,5 +1,6 @@
 #include <windows.h>
 #include <stdio.h>
+#include <fstream>
 #include <iostream>
 #include <vector>  
 #include <set> 
@@ -39,12 +40,13 @@ class StatefullKey;
 
 class MainObject {
 public:
-    HHOOK hHook=0;
-    Key** top_layer=nullptr;
-    Key** cur_layer=nullptr;
+    HHOOK hHook = 0;
+    Key** top_layer = nullptr;
+    Key** cur_layer = nullptr;
     Key** active_keys = nullptr;
-    StatefullKey*active_mods[4]; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
+    StatefullKey* active_mods[4]; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
     Key* nop = nullptr;
+    long long recording_start_time = 0;
 }main_obj;
 enum Mod {
     mod_shift = 0,
@@ -72,7 +74,7 @@ const char* state_to_string(KeyState state) {
 
 class Key {
 public:
-    virtual void event(WPARAM wParam,int vcode,long long event_time) = 0;
+    virtual void event(WPARAM wParam,int vcode,long long t) = 0;
     virtual string get_full_name() = 0;
 };
 class NopKey :public Key {
@@ -80,7 +82,7 @@ public:
     string get_full_name() {
         return "NopKey";
     }
-    void event(WPARAM wParam, int vcode, long long event_time) {
+    void event(WPARAM wParam, int vcode, long long t) {
         cout << " ignored " << flush;
     }
 };
@@ -93,17 +95,17 @@ protected:
     Mod mod;
     string name;
     long long keydown_time = 0;
-    void deactivate(long long event_time) {
+    void deactivate(long long t) {
         main_obj.active_mods[mod] = nullptr;
-        on_deactivate(event_time);
+        on_deactivate(t);
         set_state(init);
     }
 	void activate() {//used only once, but wanted symeticy with deactivate which is used multiple times
         set_state(keydown);
         main_obj.active_mods[mod] = this;
     }
-    KeyState get_state(long long event_time) {
-        if (state == keydown && event_time- keydown_time > TIMEOUT)
+    KeyState get_state(long long t) {
+        if (state == keydown && t- keydown_time > TIMEOUT)
             set_state(keydown_elapsed);
         return state;
     }
@@ -117,25 +119,25 @@ public:
     StatefullKey(const char* _name,Mod _mod) :name(_name), mod(_mod) {
     }  
     virtual void on_activate(WPARAM wParam, int vcode) = 0;
-    virtual void on_deactivate(long long event_time) = 0;
+    virtual void on_deactivate(long long t) = 0;
     virtual int on_realize(long long sender_keydown_time) = 0;
-    void event(WPARAM wParam, int vcode,long long event_time) {
-        const auto state = get_state(event_time);
+    void event(WPARAM wParam, int vcode,long long t) {
+        const auto state = get_state(t);
         switch (state) {
         case init:
             if (main_obj.active_mods[mod]) {
-                send_key_realize({ {.vcode = vcode,.wParam = wParam} }, event_time); //do the default because the mirror homeromod is in effect
+                send_key_realize({ {.vcode = vcode,.wParam = wParam} }, t); //do the default because the mirror homeromod is in effect
                 return;
             }
             assert(!is_up(wParam));
-            keydown_time = event_time;
+            keydown_time = t;
 			activate();
             on_activate(wParam, vcode);
             return;
         case keydown:
             if (is_up(wParam)) { //this means that we used the key as regular key which might have mods to realize
                 //cout << "layer key up" << flush;
-                deactivate(event_time);
+                deactivate(t);
                 send_key_realize({
                     {.vcode = vcode ,.wParam = WM_KEYDOWN},
                     {.vcode = vcode,.wParam = WM_KEYUP}
@@ -148,7 +150,7 @@ public:
         case realized:
         case keydown_elapsed:
             if (is_up(wParam))
-                return deactivate(event_time);
+                return deactivate(t);
             //dont send nothing here because this key was functioned as mod
         }
 
@@ -179,8 +181,8 @@ public:
     string get_full_name() {
         return "ForwardKey(" + vcode_to_string(forwardvcode) + ")";
     }
-    void event(WPARAM wParam, int vcode,long long event_time) {
-        send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} },event_time);
+    void event(WPARAM wParam, int vcode,long long t) {
+        send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} },t);
     }
 };
 class Repeater :public Key {
@@ -188,8 +190,8 @@ public:
     string get_full_name() {
         return "Rep";
     }
-    void event(WPARAM wParam, int vcode, long long event_time) {
-        send_key_realize({ {.vcode = vcode,.wParam = wParam} }, event_time);
+    void event(WPARAM wParam, int vcode, long long t) {
+        send_key_realize({ {.vcode = vcode,.wParam = wParam} }, t);
     }
 };
 class HomeRowKey :public StatefullKey {
@@ -198,8 +200,8 @@ public:
     }
     void on_activate(WPARAM wParam, int vcode) {
     }
-    void on_deactivate(long long event_time) {
-        if (get_state(event_time) == realized)
+    void on_deactivate(long long t) {
+        if (get_state(t) == realized)
             send_key({
               {.vcode = mod + 16,.wParam = WM_KEYUP} //to match the keydown sent on_realize
                 });
@@ -234,7 +236,7 @@ public:
         cout << "on nav" << flush;
         main_obj.cur_layer = layer;
     }
-    void on_deactivate(long long event_time) {
+    void on_deactivate(long long t) {
         cout << "on top" << flush; 
         main_obj.cur_layer = main_obj.top_layer;
     }  
@@ -289,11 +291,12 @@ Key** make_top_layer(){
     ans[' '] = new LayerKey(make_nav_layer(), mod_layer1);
     return ans;
 }
-void setup(){
+void setup_layers(){
     main_obj.top_layer = make_top_layer();
     main_obj.active_keys = make_layer(nullptr);
     main_obj.cur_layer = main_obj.top_layer;
     main_obj.nop = new NopKey();
+	main_obj.recording_start_time = get_cur_time();
 }
 /*alg:
 * on f keydown: send ctrl on keydown
@@ -318,6 +321,55 @@ Key* get_key(int vcode) {
     return nullptr;
 }      
 
+void handle_event(Event &e) {
+	auto key = get_key(e.vcode);
+    if (is_up(e.wParam))
+        main_obj.active_keys[e.vcode] = nullptr;
+    else
+        main_obj.active_keys[e.vcode] = key;
+
+    assert(key);
+    //if (key == nullptr) //todo: use the send key functiopn so realize function is called
+     //   return false;
+    const string start = adjustString(key->get_full_name(), 20) + " : ";
+    std::cout << endl << start << "\033[93m " << pcode_to_str(e.wParam, e.vcode) << "\033[0m" << flush;
+    key->event(e.wParam, e.vcode, e.t);
+}
+vector<Event> recorded_events;   
+string get_dir(const Event&event) {
+    if (is_up(event.wParam))
+	    return "up";
+    if (is_down(event.wParam))
+	    return "down";
+    return "unknown";
+}
+void write_events() {
+	if (recorded_events.size() == 0) {
+		cout << "no events to save" << flush;
+		return;
+	}
+    std::ofstream file("output.json");
+	if (!file.is_open()) {
+		printf("Error opening file!\n");
+		return;
+	}
+    file << "[\n";
+	auto first = recorded_events[0].t;
+    for (size_t i = 0; i < recorded_events.size(); ++i) {
+        const auto& event = recorded_events[i];
+        file << "  { \"wParam\": " << event.wParam
+            << ", \"vcode\": " << event.vcode
+            << ", \"key\": \"" << vcode_to_string(event.vcode) << "\""
+            << ", \"t\": " << event.t- first
+		    << ",\"dir\":\"" << get_dir(event)<<" \"}";
+        if (i + 1 < recorded_events.size()) {
+            file << ",";
+        }
+        file << "\n";
+    }
+    file << "]\n";
+    file.close();
+}
 LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
     KBDLLHOOKSTRUCT* pKbDllHookStruct = (KBDLLHOOKSTRUCT*)lParam;
     auto doit = [&]() {  
@@ -326,18 +378,28 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         if (pKbDllHookStruct->dwExtraInfo == HOMELAYER_MAGIC)
             return false; //skipped to avoid proccesing      our own synthetic 
         auto vcode = pKbDllHookStruct->vkCode; 
-        auto key = get_key(vcode);
-        if (is_up(wParam))
-            main_obj.active_keys[vcode] = nullptr;
-        else
-            main_obj.active_keys[vcode] = key;
+        auto  t = get_cur_time() - main_obj.recording_start_time;
+		Event event = { wParam, vcode, t };    
+        if (vcode == 123 && is_down(event.wParam)) {//f_12
+            cout << "saving\n" << flush;
+            write_events();
+            recorded_events.clear();
+            return true;
+        }
+        if (vcode == 121) {//f_11
+			cout << "exit" << flush;    
+			exit(0);
+        }
+		if (recorded_events.size() == 0 && is_up(event.wParam)){
+            cout << "skipping first" << endl;
+        }
+        else {
+            recorded_events.push_back(event);
+            handle_event(event);
 
-		assert(key);
-        //if (key == nullptr) //todo: use the send key functiopn so realize function is called
-         //   return false;
-        const string start = adjustString(key->get_full_name(), 20) + " : ";
-        std::cout << endl << start << "\033[93m " << pcode_to_str(wParam, vcode) << "\033[0m" << flush;
-        key->event(wParam, vcode,get_cur_time());
+        }
+
+
         return true;
     }; 
     if (doit())
@@ -364,10 +426,50 @@ void UninstallHook() {
         printf("Hook uninstalled successfully!\n");
     }
 }
+void run(const string& filename) {
+}
+void wait_for_it(long long t, long long start) {
+	int sleep_count = 0;
+    while (true) {
+        auto cur = get_cur_time() - start;
+        auto diff = cur-t;
+        if (diff > 0) {
+            if (sleep_count)
+                cout << "sleep_count:" << sleep_count << endl;
+            return;
+        }
+        Sleep(1);
+        sleep_count++;
+    }
+    
+}
+void play(const string& filename) {
+	cout << "playing" << filename<< endl;
+    auto start = get_cur_time();
+	auto events = loadEventsFromFile(filename);
+	for (auto event : events) {
+        wait_for_it(event.t, start);
+		handle_event(event);
+	}
+}
+int main(int argc, char* argv[]) {
+    setup_layers();
+    if (argc == 3) {
+        std::string command = argv[1];
+        std::string file_name = argv[2];
 
-int main() {
+        if (command == "run") {
+            run(file_name);
+            return 0;
+        }
+        if (command == "play") {
+            play(file_name);
+            return 0;
+        }
+        std::cerr << "Unknown command: " << command << std::endl;
+        return 1;
+    }
     MSG msg;
-    setup();
     // Install the keyboard hook
     InstallHook();
     

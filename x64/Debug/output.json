@@ -1,0 +1,8 @@
+[
+  { "wParam": 256, "vcode": 74, "key": "J", "t": 0,"dir":"down "},
+  { "wParam": 257, "vcode": 74, "key": "J", "t": 90,"dir":"up "},
+  { "wParam": 256, "vcode": 32, "key": "Space", "t": 135,"dir":"down "},
+  { "wParam": 256, "vcode": 74, "key": "J", "t": 203,"dir":"down "},
+  { "wParam": 257, "vcode": 32, "key": "Space", "t": 225,"dir":"up "},
+  { "wParam": 257, "vcode": 74, "key": "J", "t": 360,"dir":"up "}
+]
