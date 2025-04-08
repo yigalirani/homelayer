@@ -71,14 +71,36 @@ const char* state_to_string(KeyState state) {
         default: return "unknown";
     }
 }
+typedef enum {
+    HomeRowKeyT,
+    NopT,
+    ForwardT,
+    LayerT,
+    RepeaterT
+}KeyT;
 
+const string keyTypeToString(KeyT key) {
+    switch (key) {
+    case HomeRowKeyT: return "HomeRowKey";
+    case NopT: return "NopKey";
+    case ForwardT: return "ForwardKey";
+    case LayerT: return "LayerKey";
+	case RepeaterT: return "RepeaterKey";
+    default: return "UnknownKeyType";
+    }
+}
 class Key {
 public:
+    KeyT key_type;
+    Key(KeyT _key_type) :key_type(_key_type) {
+    }
     virtual void event(WPARAM wParam,int vcode,long long t) = 0;
     virtual string get_full_name() = 0;
 };
 class NopKey :public Key {
 public:
+    NopKey():Key(NopT) {
+	}   
     string get_full_name() {
         return "NopKey";
     }
@@ -93,7 +115,6 @@ class StatefullKey :public Key {
 protected:
     KeyState state = init ;
     Mod mod;
-    string name;
     long long keydown_time = 0;
     void deactivate(long long t) {
         main_obj.active_mods[mod] = nullptr;
@@ -116,7 +137,7 @@ protected:
 
 
 public:
-    StatefullKey(const char* _name,Mod _mod) :name(_name), mod(_mod) {
+    StatefullKey(KeyT _keytype,Mod _mod) :Key(_keytype), mod(_mod) {
     }  
     virtual void on_activate(WPARAM wParam, int vcode) = 0;
     virtual void on_deactivate(long long t) = 0;
@@ -156,7 +177,7 @@ public:
 
     }
     string get_full_name() {
-        return name + "(" +state_to_string(state)+ ")";
+        return keyTypeToString(key_type) + "(" +state_to_string(state)+ ")";
 
     }
 };
@@ -175,7 +196,7 @@ void send_key_realize(vector<SendKey> keys,long long sender_keydown_time) {
 class ForwardKey:public Key {
 public:
     int forwardvcode;
-    ForwardKey(int _forwardvcode) :
+	ForwardKey(int _forwardvcode) :Key(ForwardT),    
         forwardvcode(_forwardvcode){
     }
     string get_full_name() {
@@ -187,6 +208,8 @@ public:
 };
 class Repeater :public Key {
 public:
+	Repeater() :Key(RepeaterT) {
+	}
     string get_full_name() {
         return "Rep";
     }
@@ -196,7 +219,7 @@ public:
 };
 class HomeRowKey :public StatefullKey {
 public:
-    HomeRowKey(Mod _mod) :StatefullKey("HomeRowKey", _mod) {
+    HomeRowKey(Mod _mod) :StatefullKey(HomeRowKeyT, _mod) {
     }
     void on_activate(WPARAM wParam, int vcode) {
     }
@@ -230,7 +253,7 @@ public:
 class LayerKey :public StatefullKey {
     Key** layer;
 public:
-    LayerKey(Key** _layer,Mod _mod) :layer(_layer), StatefullKey("LayerKey",_mod) {
+    LayerKey(Key** _layer,Mod _mod) :layer(_layer), StatefullKey(LayerT,_mod) {
     }
     void on_activate(WPARAM wParam, int vcode) {
         cout << "on nav" << flush;
