@@ -7,7 +7,7 @@
 #include "utils.hpp"
 #include <cassert>
 struct SendKey {
-    int vcode;
+    DWORD vcode;
     WPARAM wParam;
 };
 #define HOMELAYER_MAGIC 0xDEADBEEF
@@ -17,7 +17,7 @@ void send_key(vector<SendKey> keys) {
 	for (auto key : keys) {
 		INPUT input;
 		input.type = INPUT_KEYBOARD;
-		input.ki.wVk = key.vcode;
+		input.ki.wVk = (WORD)key.vcode;
 		input.ki.wScan = 0;
 		input.ki.dwFlags = (key.wParam == WM_KEYUP || key.wParam == WM_SYSKEYUP) ? KEYEVENTF_KEYUP : 0;
 		input.ki.time = 0;
@@ -47,6 +47,7 @@ public:
     StatefullKey* active_mods[4]; //when homerow mod on init stage needs to check in ignore if exists. clear on keyup
     Key* nop = nullptr;
     long long recording_start_time = 0;
+    boolean pressed[256];
 }main_obj;
 enum Mod {
     mod_shift = 0,
@@ -94,7 +95,7 @@ public:
     KeyT key_type;
     Key(KeyT _key_type) :key_type(_key_type) {
     }
-    virtual void event(WPARAM wParam,int vcode,long long t) = 0;
+    virtual void event(WPARAM wParam, DWORD vcode,long long t) = 0;
     virtual string get_full_name() = 0;
 };
 class NopKey :public Key {
@@ -104,7 +105,7 @@ public:
     string get_full_name() {
         return "NopKey";
     }
-    void event(WPARAM wParam, int vcode, long long t) {
+    void event(WPARAM wParam, DWORD vcode, long long t) {
         cout << " ignored " << flush;
     }
 };
@@ -142,7 +143,7 @@ public:
     virtual void on_activate(WPARAM wParam, int vcode) = 0;
     virtual void on_deactivate(long long t) = 0;
     virtual int on_realize(long long sender_keydown_time) = 0;
-    void event(WPARAM wParam, int vcode,long long t) {
+    void event(WPARAM wParam, DWORD vcode,long long t) {
         const auto state = get_state(t);
         switch (state) {
         case init:
@@ -185,7 +186,7 @@ void send_key_realize(vector<SendKey> keys,long long sender_keydown_time) {
     for (auto mod : main_obj.active_mods) {
         if (mod == nullptr)
             continue;
-        int vcode = mod->on_realize(sender_keydown_time);
+        DWORD vcode = mod->on_realize(sender_keydown_time);
         if (vcode == -1)
             continue;
         const SendKey key = { .vcode = vcode,.wParam = WM_KEYDOWN };
@@ -195,14 +196,14 @@ void send_key_realize(vector<SendKey> keys,long long sender_keydown_time) {
 }
 class ForwardKey:public Key {
 public:
-    int forwardvcode;
+    DWORD forwardvcode;
 	ForwardKey(int _forwardvcode) :Key(ForwardT),    
         forwardvcode(_forwardvcode){
     }
     string get_full_name() {
         return "ForwardKey(" + vcode_to_string(forwardvcode) + ")";
     }
-    void event(WPARAM wParam, int vcode,long long t) {
+    void event(WPARAM wParam, DWORD vcode,long long t) {
         send_key_realize({ { .vcode = forwardvcode,.wParam=wParam} },t);
     }
 };
@@ -213,7 +214,7 @@ public:
     string get_full_name() {
         return "Rep";
     }
-    void event(WPARAM wParam, int vcode, long long t) {
+    void event(WPARAM wParam, DWORD vcode, long long t) {
         send_key_realize({ {.vcode = vcode,.wParam = wParam} }, t);
     }
 };
@@ -226,7 +227,7 @@ public:
     void on_deactivate(long long t) {
         if (get_state(t) == realized)
             send_key({
-              {.vcode = mod + 16,.wParam = WM_KEYUP} //to match the keydown sent on_realize
+              {.vcode = (DWORD)mod + 16,.wParam = WM_KEYUP} //to match the keydown sent on_realize
                 });
     }
 	int on_realize(long long sender_keydown_time) {
@@ -241,7 +242,7 @@ public:
         cout << "cont" << flush;
 		if (diff < TIMEOUT) {
 			send_key({
-				{.vcode = mod + 16,.wParam = WM_KEYDOWN}
+				{.vcode = (DWORD)mod + 16,.wParam = WM_KEYDOWN}
 				});
 		}   
 		set_state(realized);
@@ -320,6 +321,10 @@ void setup_layers(){
     main_obj.cur_layer = main_obj.top_layer;
     main_obj.nop = new NopKey();
 	main_obj.recording_start_time = get_cur_time();
+    for (int i = 0; i < 256; i++) {
+        main_obj.pressed[i] = false;
+    }
+    //init main_obj.pressed to all false
 }
 /*alg:
 * on f keydown: send ctrl on keydown
@@ -344,7 +349,7 @@ Key* get_key(int vcode) {
     return nullptr;
 }      
 
-void handle_event(Event &e) {
+void handle_event_old(Event &e) {
 	auto key = get_key(e.vcode);
     if (is_up(e.wParam))
         main_obj.active_keys[e.vcode] = nullptr;
@@ -352,11 +357,44 @@ void handle_event(Event &e) {
         main_obj.active_keys[e.vcode] = key;
 
     assert(key);
-    //if (key == nullptr) //todo: use the send key functiopn so realize function is called
+   //if (key == nullptr) //todo: use the send key functiopn so realize function is called
      //   return false;
     const string start = adjustString(key->get_full_name(), 20) + " : ";
     std::cout << endl << start << "\033[93m " << pcode_to_str(e.wParam, e.vcode) << "\033[0m" << flush;
     key->event(e.wParam, e.vcode, e.t);
+}
+void handle_event_pass_through(Event& e) {
+    std::cout << endl << "\033[93m " << pcode_to_str(e.wParam, e.vcode) << "\033[0m" << flush;
+    vector<SendKey> keys = {
+        { e.vcode, e.wParam } // 'A'
+    };
+    send_key(keys);
+}
+void handle_event_delayed_down(Event& e) {
+
+    if (is_up(e.wParam)) {
+        vector<SendKey> keys = {
+            { e.vcode, static_cast<WPARAM>(WM_KEYDOWN) }, // 'A'
+            { e.vcode, static_cast<WPARAM>(WM_KEYUP) }  // 'B'
+        };
+        send_key(keys);
+
+    }
+}
+void handle_event_pressed(Event& e){
+    //////if (e.vcode == ' ') {
+    if (is_down(e.wParam)) {
+        main_obj.pressed[' '] = true; //even if it is alreay pressed
+        return;
+    }
+    //clear space pressed
+    //release all other prressed  with space mappng if exists
+    main_obj.pressed[' '] = false;
+}
+
+void handle_event(Event& e) {
+    handle_event_delayed_down(e);
+    //handle_event_pass_through(e);
 }
 vector<Event> recorded_events;   
 string get_dir(const Event&event) {
