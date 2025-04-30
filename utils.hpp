@@ -7,7 +7,8 @@
 #include <algorithm> // For std::max
 #include <iomanip>
 #include <nlohmann/json.hpp>
-using namespace std;
+#include "alg.hpp"
+
 static const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
     case WM_KEYDOWN: return "//";
@@ -21,6 +22,11 @@ static const char* wmparm_to_tr(WPARAM parm) {
     case WM_UNICHAR: return "UNICHAR";
     default: return "Unknown";
     }
+}
+static const char* is_down_to_tr(bool is_down) {
+    if (is_down)
+        return "//";
+    return "\\\\";
 }
 using namespace std;
 string to_hexstring(int x) {
@@ -123,8 +129,8 @@ string adjustString(const string &input, int length) {
     }
     return std::string(input) + std::string(length - inputLength, ' ');
 }
-static string pcode_to_str(WPARAM wparm, int vcode) {
-    string ans=string(wmparm_to_tr(wparm)) + "-" + vcode_to_string(vcode); //add padding here so its always the same width
+static string pcode_to_str(Event e) {
+    string ans=string(is_down_to_tr(e.is_down)) + "-" + vcode_to_string(e.vcode); //add padding here so its always the same width
     return ans;
     return adjustString(ans.c_str(), 20);
 }
@@ -143,12 +149,7 @@ long long get_cur_time() {
     // Convert to milliseconds (from 100-nanosecond intervals) and subtract the epoch difference
     return (largeInt.QuadPart / 10000) - EPOCH_DIFFERENCE;
 }
-class Event {
-public:
-    WPARAM wParam;
-    DWORD vcode;
-    long long t;
-};
+
 std::vector<Event> loadEventsFromFile(const std::string& filename) {
 	cout << "Loading events from file: " << filename << endl;
     std::vector<Event> events;
@@ -175,8 +176,8 @@ std::vector<Event> loadEventsFromFile(const std::string& filename) {
     for (const auto& item : j) {
         Event e;
         try {
-            e.wParam = item.at("wParam").get<WPARAM>();
-            e.vcode = item.at("vcode").get<DWORD>();
+            e.is_down = item.at("is_down").get<WPARAM>();
+            e.vcode = item.at("vcode").get<unsigned char>();
             e.t = item.at("t").get<long long>();
             events.push_back(e);
         }
