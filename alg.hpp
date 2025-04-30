@@ -14,3 +14,4 @@ public:
 	virtual ~Alg() {}
 };
 Alg* make_doubling_alg();
+Alg* make_delay_alg();

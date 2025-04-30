@@ -29,7 +29,8 @@ public:
     HHOOK hHook = 0;
     long long recording_start_time = get_cur_time();
     vector<Event> recorded_events;
-    Alg*alg = make_doubling_alg();
+    Alg* alg = make_delay_alg();// make_doubling_alg();
+
 }main_obj;
 void handle_event_pass_through(Event e) {
     std::cout << endl << "\033[93m " << pcode_to_str(e) << "\033[0m" << flush;
@@ -54,7 +55,7 @@ void handle_event(Event& e) {
     main_obj.recorded_events.push_back(e);
     auto gen_events=main_obj.alg->handle_event(e);
     for (Event e2 : gen_events) {
-        e2.comment = "den";
+        e2.comment = "*";
         main_obj.recorded_events.push_back(e2);
     }
     send_key(gen_events);

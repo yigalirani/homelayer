@@ -190,8 +190,8 @@ std::vector<Event> loadEventsFromFile(const std::string& filename) {
 }
 string get_dir(const Event& event) {
     if (event.is_down)
-        return "\\\\";
-    else return "//";
+        return "\xE2\x86\x98";  // UTF-8 bytes for 
+    else return "\xE2\x86\x97";// 	utf9-8 for  North East Arrow	North East Arrow
 }
 void write_events(vector<Event> recorded_events) {
     if (recorded_events.size() == 0) {
@@ -209,10 +209,10 @@ void write_events(vector<Event> recorded_events) {
         const auto& event = recorded_events[i];
         file << "  { \"is_down\": " << event.is_down
             << ", \"vcode\": " << (int)event.vcode
-            << ", \"key\": \"" << vcode_to_string(event.vcode) << "\""
             << ", \"t\": " << event.t - first
-            << ",\"dir\":\"" << get_dir(event) << "\""
-            << ",\"comment\":\"" << event.comment << "\"}";
+            << ",\"c\":\"" << event.comment << "\""
+            << ", \"key\": \"" << vcode_to_string(event.vcode) << "\""
+            << ",\"dir\":\"" << get_dir(event) << "\"}";
         if (i + 1 < recorded_events.size()) {
             file << ",";
         }

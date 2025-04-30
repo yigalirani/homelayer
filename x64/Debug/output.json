@@ -1,14 +1,14 @@
 [
-  { "is_down": 1, "vcode": 68, "key": "D", "t": 0,"dir":"\\","comment":""},
-  { "is_down": 1, "vcode": 68, "key": "D", "t": 0,"dir":"\\","comment":"den"},
-  { "is_down": 1, "vcode": 68, "key": "D", "t": 0,"dir":"\\","comment":"den"},
-  { "is_down": 1, "vcode": 70, "key": "F", "t": 32,"dir":"\\","comment":""},
-  { "is_down": 1, "vcode": 70, "key": "F", "t": 32,"dir":"\\","comment":"den"},
-  { "is_down": 1, "vcode": 70, "key": "F", "t": 32,"dir":"\\","comment":"den"},
-  { "is_down": 0, "vcode": 68, "key": "D", "t": 160,"dir":"//","comment":""},
-  { "is_down": 0, "vcode": 68, "key": "D", "t": 160,"dir":"//","comment":"den"},
-  { "is_down": 0, "vcode": 68, "key": "D", "t": 160,"dir":"//","comment":"den"},
-  { "is_down": 0, "vcode": 70, "key": "F", "t": 180,"dir":"//","comment":""},
-  { "is_down": 0, "vcode": 70, "key": "F", "t": 180,"dir":"//","comment":"den"},
-  { "is_down": 0, "vcode": 70, "key": "F", "t": 180,"dir":"//","comment":"den"}
+  { "is_down": 1, "vcode": 83, "t": 0,"c":"", "key": "S","dir":"↘"},
+  { "is_down": 1, "vcode": 83, "t": 0,"c":"*", "key": "S","dir":"↘"},
+  { "is_down": 1, "vcode": 83, "t": 0,"c":"*", "key": "S","dir":"↘"},
+  { "is_down": 1, "vcode": 68, "t": 97,"c":"", "key": "D","dir":"↘"},
+  { "is_down": 1, "vcode": 68, "t": 97,"c":"*", "key": "D","dir":"↘"},
+  { "is_down": 1, "vcode": 68, "t": 97,"c":"*", "key": "D","dir":"↘"},
+  { "is_down": 0, "vcode": 83, "t": 177,"c":"", "key": "S","dir":"↗"},
+  { "is_down": 0, "vcode": 83, "t": 177,"c":"*", "key": "S","dir":"↗"},
+  { "is_down": 0, "vcode": 83, "t": 177,"c":"*", "key": "S","dir":"↗"},
+  { "is_down": 0, "vcode": 68, "t": 300,"c":"", "key": "D","dir":"↗"},
+  { "is_down": 0, "vcode": 68, "t": 300,"c":"*", "key": "D","dir":"↗"},
+  { "is_down": 0, "vcode": 68, "t": 300,"c":"*", "key": "D","dir":"↗"}
 ]
