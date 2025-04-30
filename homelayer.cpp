@@ -55,7 +55,7 @@ void handle_event(Event& e) {
     main_obj.recorded_events.push_back(e);
     auto gen_events=main_obj.alg->handle_event(e);
     for (Event e2 : gen_events) {
-        e2.comment = "*";
+        e2.comment = "out_";
         main_obj.recorded_events.push_back(e2);
     }
     send_key(gen_events);

@@ -207,12 +207,13 @@ void write_events(vector<Event> recorded_events) {
     auto first = recorded_events[0].t;
     for (size_t i = 0; i < recorded_events.size(); ++i) {
         const auto& event = recorded_events[i];
+        string comment = event.comment;
         file << "  { \"is_down\": " << event.is_down
             << ", \"vcode\": " << (int)event.vcode
             << ", \"t\": " << event.t - first
-            << ",\"c\":\"" << event.comment << "\""
-            << ", \"key\": \"" << vcode_to_string(event.vcode) << "\""
-            << ",\"dir\":\"" << get_dir(event) << "\"}";
+            ///<< ",\"c\":\"" << event.comment << "\""
+            << ", \"" + comment + "key\": \"" << vcode_to_string(event.vcode) << "\""
+            << ",\"" + comment + "dir\":\"" << get_dir(event) << "\"}";
         if (i + 1 < recorded_events.size()) {
             file << ",";
         }
