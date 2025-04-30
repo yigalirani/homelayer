@@ -6,6 +6,7 @@ public:
 	unsigned char vcode;
 	bool is_down;
 	long long t;
+	const char* comment = "";
 };
 class Alg {
 public:

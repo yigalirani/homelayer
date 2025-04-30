@@ -188,3 +188,36 @@ std::vector<Event> loadEventsFromFile(const std::string& filename) {
 
     return events;
 }
+string get_dir(const Event& event) {
+    if (event.is_down)
+        return "\\\\";
+    else return "//";
+}
+void write_events(vector<Event> recorded_events) {
+    if (recorded_events.size() == 0) {
+        cout << "no events to save" << flush;
+        return;
+    }
+    std::ofstream file("output.json");
+    if (!file.is_open()) {
+        printf("Error opening file!\n");
+        return;
+    }
+    file << "[\n";
+    auto first = recorded_events[0].t;
+    for (size_t i = 0; i < recorded_events.size(); ++i) {
+        const auto& event = recorded_events[i];
+        file << "  { \"is_down\": " << event.is_down
+            << ", \"vcode\": " << (int)event.vcode
+            << ", \"key\": \"" << vcode_to_string(event.vcode) << "\""
+            << ", \"t\": " << event.t - first
+            << ",\"dir\":\"" << get_dir(event) << "\""
+            << ",\"comment\":\"" << event.comment << "\"}";
+        if (i + 1 < recorded_events.size()) {
+            file << ",";
+        }
+        file << "\n";
+    }
+    file << "]\n";
+    file.close();
+}
