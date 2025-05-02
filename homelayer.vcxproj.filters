@@ -21,8 +21,5 @@
     <ClCompile Include="doubling_alg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="delay_alg.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
   </ItemGroup>
 </Project>

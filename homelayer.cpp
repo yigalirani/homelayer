@@ -29,7 +29,8 @@ public:
     HHOOK hHook = 0;
     long long recording_start_time = get_cur_time();
     vector<Event> recorded_events;
-    Alg* alg = make_delay_alg();// make_doubling_alg();
+    //Alg* alg = make_delay_alg();// make_doubling_alg();
+    Alg* alg = make_doubling_alg();
 
 }main_obj;
 void handle_event_pass_through(Event e) {
