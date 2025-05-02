@@ -4,12 +4,14 @@
 #include <iostream>
 class Key {
 public:
-	enum KeyStatus {
+	/*enum KeyStatus{
 		idle = 0,
 		pressed,
 		canceled,//pressed before the elepsed time is needed?
-		activataed // ctl/shift/alt was already sent
-	}status = idle;
+		activataed 
+	}status = idle;*/
+	bool pressed = false;
+	bool mod_key_sent = false;// ctl/shift/alt was already sent so dont send again and send up when the key is up
 	long long last_press_time=0;
 	long long last_unpress_time=0;
 };
@@ -43,17 +45,41 @@ unsigned char* make_space_layer() {
 
 
 class DelayAlg:public Alg {
-	unordered_map<unsigned char, unsigned char *> layers;
+	unsigned char* layers[256]={ nullptr };
 	Key keys[256];
+	long long delay = 300;// in ms. todo: configurable
 public:
+	unsigned char get_subsitute(Event& e){
+		auto vcode = e.vcode;
+		for (int i = 0; i < 256; i++) {
+			Key& key = keys[i];
+			if (!key.pressed || key.last_press_time + delay > e.t)
+				continue;
+			auto layer = layers[i];
+			if (layers[i] == nullptr)
+				continue;
+			auto ans = layer[vcode];
+			if (ans != 0)
+				return ans;
+			return vcode;
+		}
+		return vcode;
+	}
 	DelayAlg() {
 		layers[' '] = make_space_layer();
 		print_layer(layers[' ']);
 	}
 	vector<Event>handle_event(Event& e) {
 		vector<Event> ans;
-		ans.push_back(e);
-		ans.push_back(e);
+		if (e.is_down) {
+			keys[e.vcode].pressed=true;
+			return ans;//todo add the logic for aut repeat:
+		}
+		keys[e.vcode].pressed = false;//todo assert that that was true before
+		auto vcode = get_subsitute(e);
+
+		ans.push_back({ vcode ,true });
+		ans.push_back({ vcode ,false });
 		return ans;
 	}
 	~DelayAlg() {
