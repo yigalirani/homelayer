@@ -1,6 +1,7 @@
+#include <Windows.h>
 #include "alg.hpp"
 #include <unordered_map>
-#include <Windows.h>
+
 class Key {
 public:
 	enum KeyStatus {
