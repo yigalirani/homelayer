@@ -30,26 +30,10 @@ public:
     long long recording_start_time = get_cur_time();
     vector<Event> recorded_events;
     //Alg* alg = make_delay_alg();// make_doubling_alg();
-    Alg* alg = make_doubling_alg();
+    Alg* alg = make_pass_through();
+    //Alg* alg = make_doubling_alg();
 
 }main_obj;
-void handle_event_pass_through(Event e) {
-    std::cout << endl << "\033[93m " << pcode_to_str(e) << "\033[0m" << flush;
-    vector<Event> keys = {
-        e // 'A'
-    };
-    send_key(keys);
-}
-void handle_event_delayed_down(Event& e) {
-    if (!e.is_down) {
-        vector<Event> keys = {
-            { e.vcode, true }, // 'A'
-            { e.vcode, false }  // 'B'
-        };
-        send_key(keys);
-
-    }
-}
 
 
 void handle_event(Event& e) {

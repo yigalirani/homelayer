@@ -1,0 +1,22 @@
+[
+  { "is_down": 1, "vcode": 69, "t": 0, "key": "E","dir":"↘"},
+  { "is_down": 1, "vcode": 69, "t": 0, "out_key": "E","out_dir":"↘"},
+  { "is_down": 0, "vcode": 69, "t": 171, "key": "E","dir":"↗"},
+  { "is_down": 0, "vcode": 69, "t": 171, "out_key": "E","out_dir":"↗"},
+  { "is_down": 1, "vcode": 86, "t": 186, "key": "V","dir":"↘"},
+  { "is_down": 1, "vcode": 86, "t": 186, "out_key": "V","out_dir":"↘"},
+  { "is_down": 0, "vcode": 86, "t": 376, "key": "V","dir":"↗"},
+  { "is_down": 0, "vcode": 86, "t": 376, "out_key": "V","out_dir":"↗"},
+  { "is_down": 1, "vcode": 69, "t": 404, "key": "E","dir":"↘"},
+  { "is_down": 1, "vcode": 69, "t": 404, "out_key": "E","out_dir":"↘"},
+  { "is_down": 1, "vcode": 78, "t": 536, "key": "N","dir":"↘"},
+  { "is_down": 1, "vcode": 78, "t": 536, "out_key": "N","out_dir":"↘"},
+  { "is_down": 0, "vcode": 78, "t": 605, "key": "N","dir":"↗"},
+  { "is_down": 0, "vcode": 78, "t": 605, "out_key": "N","out_dir":"↗"},
+  { "is_down": 1, "vcode": 84, "t": 672, "key": "T","dir":"↘"},
+  { "is_down": 1, "vcode": 84, "t": 672, "out_key": "T","out_dir":"↘"},
+  { "is_down": 0, "vcode": 69, "t": 831, "key": "E","dir":"↗"},
+  { "is_down": 0, "vcode": 69, "t": 831, "out_key": "E","out_dir":"↗"},
+  { "is_down": 0, "vcode": 84, "t": 836, "key": "T","dir":"↗"},
+  { "is_down": 0, "vcode": 84, "t": 836, "out_key": "T","out_dir":"↗"}
+]

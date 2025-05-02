@@ -15,3 +15,5 @@ public:
 };
 Alg* make_doubling_alg();
 Alg* make_delay_alg();
+Alg* make_pass_through();
+Alg* make_delayed_down();

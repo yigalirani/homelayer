@@ -1,7 +1,7 @@
 #include <Windows.h>
 #include "alg.hpp"
 #include <unordered_map>
-
+#include <iostream>
 class Key {
 public:
 	enum KeyStatus {
@@ -10,8 +10,8 @@ public:
 		canceled,//pressed before the elepsed time is needed?
 		activataed // ctl/shift/alt was already sent
 	}status = idle;
-	long long press_time;
-
+	long long last_press_time=0;
+	long long last_unpress_time=0;
 };
 
 
@@ -20,6 +20,13 @@ unsigned char* make_layer() {
 	for (int i = 0; i < 256; i++)
 		ans[i] = 0;
 	return ans;
+}
+void print_layer(unsigned char*layer) {
+	for (int i = 0; i < 256; i++)
+		if (layer[i] != 0)
+			cout << (char)i << " " << layer[i] << endl;
+	
+
 }
 unsigned char* make_space_layer() {
 	auto ans = make_layer();
@@ -37,12 +44,20 @@ unsigned char* make_space_layer() {
 
 class DelayAlg:public Alg {
 	unordered_map<unsigned char, unsigned char *> layers;
-	//layers[' '] = make_space_layer();
+	Key keys[256];
+public:
+	DelayAlg() {
+		layers[' '] = make_space_layer();
+		print_layer(layers[' ']);
+	}
 	vector<Event>handle_event(Event& e) {
 		vector<Event> ans;
 		ans.push_back(e);
 		ans.push_back(e);
 		return ans;
+	}
+	~DelayAlg() {
+
 	}
 };
 Alg* make_delay_alg() {
