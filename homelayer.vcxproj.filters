@@ -18,10 +18,10 @@
     <ClCompile Include="homelayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="doubling_alg.cpp">
+    <ClCompile Include="debug_algs.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="delay_alg.cpp">
+    <ClCompile Include="main_alg.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
