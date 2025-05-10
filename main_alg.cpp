@@ -44,9 +44,32 @@ unsigned char* make_space_layer() {
 }
 
 
+unsigned char* make_passthro() {
+	unsigned char *ans= make_layer();
+	ans[VK_MENU] = true;    // Alt key
+	ans[VK_LMENU] = true;   // Left Alt
+	ans[VK_RMENU] = true;   // Right Alt
+
+	// Ctrl keys
+	ans[VK_CONTROL] = true; // Ctrl key
+	ans[VK_LCONTROL] = true; // Left Ctrl
+	ans[VK_RCONTROL] = true; // Right Ctrl
+
+	// Shift keys
+	ans[VK_SHIFT] = true;   // Shift key
+	ans[VK_LSHIFT] = true;  // Left Shift
+	ans[VK_RSHIFT] = true;  // Right Shift
+
+	// Windows keys
+	ans[VK_LWIN] = true;    // Left Windows
+	ans[VK_RWIN] = true;    // Right Windows
+	return ans;
+}
+ 
 class DelayAlg:public Alg {
 	unsigned char* layers[256]={ nullptr };
 	Key keys[256];
+	unsigned char* passthou = make_passthro();
 	long long delay = 300;// in ms. todo: configurable
 public:
 	unsigned char get_subsitute(Event& e){
@@ -70,6 +93,8 @@ public:
 		print_layer(layers[' ']);
 	}
 	vector<Event>handle_event(Event& e) {
+		if (passthou[e.vcode])
+			return { e };
 		vector<Event> ans;
 		if (e.is_down) {
 			keys[e.vcode].pressed=true;
