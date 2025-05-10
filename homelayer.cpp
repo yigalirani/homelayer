@@ -9,7 +9,7 @@
 #include <cassert>
 #define HOMELAYER_MAGIC 0xDEADBEEF
 
-void send_key(vector<Event> events) {
+void send_key(vector<Event> events,bool fake) {
 	vector<INPUT> inputs;
 	for (auto e : events) {
 		INPUT input;
@@ -19,9 +19,13 @@ void send_key(vector<Event> events) {
 		input.ki.dwFlags = e.is_down?0:KEYEVENTF_KEYUP;
 		input.ki.time = 0;
 		input.ki.dwExtraInfo = HOMELAYER_MAGIC;
+        if (fake)
+            cout << "\033[32m " << pcode_to_str(e) << "\033[0m" << endl;
 		inputs.push_back(input);
 		
 	}
+    if (fake)
+        return;
 	SendInput((UINT)inputs.size(), inputs.data(), sizeof(INPUT));
 }
 class MainObject {
@@ -38,7 +42,7 @@ public:
 }main_obj;
 
 
-void handle_event(Event& e) {
+void handle_event(Event& e,bool fake) {
     main_obj.recorded_events.push_back(e);
     auto gen_events=main_obj.alg->handle_event(e);
     for (Event e2 : gen_events) {
@@ -46,8 +50,7 @@ void handle_event(Event& e) {
         e2.t = e.t;//because we are sending it right now
         main_obj.recorded_events.push_back(e2);
     }
-    send_key(gen_events);
-    cout << "\033[32m " << pcode_to_str(e) << "\033[0m" << endl;
+    send_key(gen_events,fake);
     //handle_event_delayed_down(e);
     //handle_event_pass_through(e);
 }
@@ -80,7 +83,7 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         }
         else {
             
-            handle_event(event);
+            handle_event(event,false);
 
         }
 
@@ -113,10 +116,10 @@ void UninstallHook() {
 }
 void run(const string& filename) {
 }
-void wait_for_it(long long t, long long start) {
+/*void wait_for_it(long long t, long long start) {
 	int sleep_count = 0;
     while (true) {
-        auto cur = get_cur_time() - start;
+        auto cur = ge t_cur_time() - start;
         auto diff = cur-t;
         if (diff > 0) {
             if (sleep_count)
@@ -127,21 +130,21 @@ void wait_for_it(long long t, long long start) {
         sleep_count++;
     }
     
-}
+}*/
 void play(const string& filename) {
 	cout << "playing" << filename<< endl;
-    auto start = get_cur_time();
+    //auto start = ge t_cur_time();
 	auto events = loadEventsFromFile(filename);
 	for (auto event : events) {
-        wait_for_it(event.t, start);
-		handle_event(event);
+        //wait_for_it(event.t, start);
+		handle_event(event,true);
 	}
 }
 int main(int argc, char* argv[]) {
     //setup_layers();
     if (argc == 3) {
-        std::string command = argv[1];
-        std::string file_name = argv[2];
+        string command = argv[1];
+        string file_name = argv[2];
 
         if (command == "run") {
             run(file_name);
@@ -151,7 +154,7 @@ int main(int argc, char* argv[]) {
             play(file_name);
             return 0;
         }
-        std::cerr << "Unknown command: " << command << std::endl;
+        cerr << "Unknown command: " << command << endl;
         return 1;
     }
     MSG msg;

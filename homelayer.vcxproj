@@ -132,6 +132,7 @@
     <ClCompile Include="main_alg.cpp" />
     <ClCompile Include="debug_algs.cpp" />
     <ClCompile Include="homelayer.cpp" />
+    <ClCompile Include="utils.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -2,6 +2,8 @@
 #include "alg.hpp"
 #include <unordered_map>
 #include <iostream>
+#include "utils.hpp"
+
 class Key {
 public:
 	/*enum KeyStatus{
@@ -76,8 +78,11 @@ public:
 		auto vcode = e.vcode;
 		for (int i = 0; i < 256; i++) {
 			Key& key = keys[i];
-			if (!key.pressed || key.last_press_time + delay > e.t)
+			if (!key.pressed)
 				continue;
+			if ( key.last_press_time + delay > e.t)
+				continue;
+			cout << "layer in effect,last press time=" << key.last_press_time << "e.t=" << e.t << endl;
 			auto layer = layers[i];
 			if (layers[i] == nullptr)
 				continue;
@@ -96,11 +101,13 @@ public:
 		if (passthou[e.vcode])
 			return { e };
 		vector<Event> ans;
+		Key& key = keys[e.vcode];
 		if (e.is_down) {
-			keys[e.vcode].pressed=true;
+			key.pressed=true;
+			key.last_press_time = get_cur_time();
 			return ans;//todo add the logic for aut repeat:
 		}
-		keys[e.vcode].pressed = false;//todo assert that that was true before
+		key.pressed = false;//todo assert that that was true before
 		auto vcode = get_subsitute(e);
 
 		ans.push_back({ vcode ,true });
