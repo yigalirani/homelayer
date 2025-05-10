@@ -103,8 +103,9 @@ public:
 		vector<Event> ans;
 		Key& key = keys[e.vcode];
 		if (e.is_down) {
-			key.pressed=true;
-			key.last_press_time = get_cur_time();
+			if (!key.pressed) //for long press, only consider ther first press
+				key.last_press_time = e.t;
+			key.pressed = true;
 			return ans;//todo add the logic for aut repeat:
 		}
 		key.pressed = false;//todo assert that that was true before

@@ -178,7 +178,9 @@ vector<Event> loadEventsFromFile(const string& filename) {
     for (const auto& item : j) {
         Event e;
         try {
-            auto key = item.at("key").get<string>(); //not storing it anyware,, just to aoid the out_key entries
+            if (!item.contains("key"))
+                continue; //must be a key_out line. todo verify
+            auto key = item.at("key").get<string>(); 
             e.is_down = item.at("is_down").get<WPARAM>();
             e.vcode = item.at("vcode").get<unsigned char>();
             e.t = item.at("t").get<long long>();
