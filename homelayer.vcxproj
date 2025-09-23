@@ -129,6 +129,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="alt_alg.cpp" />
     <ClCompile Include="main_alg.cpp" />
     <ClCompile Include="debug_algs.cpp" />
     <ClCompile Include="homelayer.cpp" />

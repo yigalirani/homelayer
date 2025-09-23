@@ -8,4 +8,4 @@
 #include <iomanip>
 #include <nlohmann/json.hpp>
 #include "alg.hpp"
-
+unsigned char* make_layer();

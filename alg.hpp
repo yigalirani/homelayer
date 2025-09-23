@@ -19,6 +19,7 @@ Alg* make_doubling_alg();
 Alg* make_delay_alg();
 Alg* make_pass_through();
 Alg* make_delayed_down();
+Alg* make_alt_alg();
 
 static const char* wmparm_to_tr(WPARAM parm);
 static const char* is_down_to_tr(bool is_down);

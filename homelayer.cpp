@@ -37,7 +37,7 @@ public:
     //Alg* alg = make_pass_through();
     //Alg* alg = make_doubling_alg();
     Alg* alg = make_delay_alg();
-    
+    //Alg* alg = make_alt_alg();
 
 }main_obj;
 
