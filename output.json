@@ -1,14 +1,8 @@
 [
-  { "is_down": 1, "vcode": 32, "t": 0, "key": "Space","dir":"↘"},
-  { "is_down": 1, "vcode": 74, "t": 343, "key": "J","dir":"↘"},
-  { "is_down": 0, "vcode": 74, "t": 432, "key": "J","dir":"↗"},
-  { "is_down": 1, "vcode": 38, "t": 432, "out_key": "Up Arrow","out_dir":"↘"},
-  { "is_down": 0, "vcode": 38, "t": 432, "out_key": "Up Arrow","out_dir":"↗"},
-  { "is_down": 1, "vcode": 74, "t": 972, "key": "J","dir":"↘"},
-  { "is_down": 0, "vcode": 74, "t": 1129, "key": "J","dir":"↗"},
-  { "is_down": 1, "vcode": 38, "t": 1129, "out_key": "Up Arrow","out_dir":"↘"},
-  { "is_down": 0, "vcode": 38, "t": 1129, "out_key": "Up Arrow","out_dir":"↗"},
-  { "is_down": 0, "vcode": 32, "t": 1491, "key": "Space","dir":"↗"},
-  { "is_down": 1, "vcode": 32, "t": 1491, "out_key": "Space","out_dir":"↘"},
-  { "is_down": 0, "vcode": 32, "t": 1491, "out_key": "Space","out_dir":"↗"}
+  { "is_down": 1, "vcode": 164, "t": 0, "key": "VK_LMENU","dir":"↘"},
+  { "is_down": 1, "vcode": 74, "t": 198, "key": "J","dir":"↘"},
+  { "is_down": 1, "vcode": 38, "t": 198, "out_key": "Up Arrow","out_dir":"↘"},
+  { "is_down": 0, "vcode": 74, "t": 283, "key": "J","dir":"↗"},
+  { "is_down": 0, "vcode": 74, "t": 283, "out_key": "J","out_dir":"↗"},
+  { "is_down": 0, "vcode": 164, "t": 562, "key": "VK_LMENU","dir":"↗"}
 ]

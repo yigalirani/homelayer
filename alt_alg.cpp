@@ -4,7 +4,7 @@
 #include <iostream>
 #include "utils.hpp"
 
-class Key {
+class AltKey {
 public:
 	unsigned char* layer_at_press=nullptr;//so can lookup replacement on up
 	long long last_press_time=0;
@@ -14,14 +14,11 @@ public:
 
 unsigned char* make_left_alt_layer() {
 	auto ans = make_layer();
-	ans['J'] = VK_UP;
-	ans['M'] = VK_DOWN;
-	ans['N'] = VK_LEFT;
-	ans[VK_OEM_COMMA] = VK_RIGHT;
-	ans['H'] = VK_HOME;
-	ans['K'] = VK_END;
-	ans['O'] = VK_PRIOR;
-	ans['L'] = VK_NEXT;
+	ans['H'] = VK_LEFT;
+	ans['J'] = VK_DOWN;
+	ans['K'] = VK_UP;
+	ans['L'] = VK_RIGHT;
+	
 
 	ans['F'] = VK_LCONTROL;
 	ans['D'] = VK_LSHIFT;
@@ -39,7 +36,7 @@ unsigned char* make_right_alt_layer() {
 }
 
 class AltAlg:public Alg {
-	Key keys[256];
+	AltKey keys[256];
 	unsigned char* cur_layer = nullptr;
 	unsigned char* layers[256] = { nullptr };
 
@@ -49,7 +46,7 @@ public:
 		layers[VK_RMENU] = make_right_alt_layer();
 	}
 	vector<Event>handle_event(Event& e) {
-		auto key = keys[e.vcode];
+		auto &key = keys[e.vcode];
 		if (!e.is_down) {//it is up
 			auto layer_at_press = key.layer_at_press;
 			key.layer_at_press = nullptr;
@@ -69,7 +66,7 @@ public:
 		key.last_press_time = e.t;
 		if (cur_layer == nullptr) {
 			cur_layer = layers[e.vcode];
-			if (cur_layer == nullptr)
+			if (cur_layer != nullptr)
 				return {};//key is not sent becuase it was used to turn on the layer
 			return{ e };//should clear the key[e.vocde]? or asset that is cleared
 		}
