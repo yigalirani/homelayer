@@ -2,3 +2,4 @@ homelayer/
 .vs/
 *.user
 *.pdb
+./*.json

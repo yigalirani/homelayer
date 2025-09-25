@@ -21,6 +21,10 @@ bool is_extended(int vcode) {
         vcode == VK_UP ||
         vcode == VK_DOWN;
 }
+string highlight(string txt, const char* color) {
+    return string("\033[") + color + "m " + txt + "\033[0m";
+}
+
 void send_key(vector<Event> events,bool fake) {
 	vector<INPUT> inputs;
 	for (auto e : events) {
@@ -32,7 +36,7 @@ void send_key(vector<Event> events,bool fake) {
 		input.ki.time = 0;
 		//input.ki.dwExtraInfo = HOMELAYER_MAGIC;
         //if (fake)
-            cout << "\033[32m " << pcode_to_str(e) << "\033[0m" << endl;
+            cout << highlight(pcode_to_str(e),"32")<< endl;
 		inputs.push_back(input);
 		
 	}
@@ -53,6 +57,27 @@ public:
 
 }main_obj;
 
+boolean escape_mode = false;
+void handle_escape_mode(Event& e){
+    if (!e.is_down)
+        return;
+    if (escape_mode && e.vcode == 123) {//f_12
+        cout << highlight("saving", "33") << "\n" << flush;
+        write_events(main_obj.recorded_events);
+        main_obj.recorded_events.clear();
+
+    }
+    if (escape_mode && e.vcode == 121) {//f_11
+        cout << "exit" << flush;
+        exit(0);
+    }
+    auto last_escape_mode = escape_mode;
+    escape_mode = (e.vcode == VK_ESCAPE);
+    if (escape_mode)
+        cout << highlight("escape mode on", "33");
+    if (last_escape_mode && !escape_mode)
+        cout << highlight("escape mode off", "33");
+}
 
 void handle_event(Event& e,bool fake) {
     main_obj.recorded_events.push_back(e);
@@ -60,6 +85,7 @@ void handle_event(Event& e,bool fake) {
     for (Event e2 : gen_events) {
         e2.comment = "out_";
         e2.t = e.t;//because we are sending it right now
+        handle_escape_mode(e);
         main_obj.recorded_events.push_back(e2);
     }
     send_key(gen_events,fake);
@@ -85,16 +111,8 @@ LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam) {
         auto is_down = wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN;
         auto  t = get_cur_time() - main_obj.recording_start_time;
 		Event event = { vcode, is_down, t };
-        if (vcode == 123 && is_down) {//f_12
-            cout << "saving\n" << flush;
-            write_events(main_obj.recorded_events);
-            main_obj.recorded_events.clear();
-            return true;
-        }
-        if (vcode == 121) {//f_11
-			cout << "exit" << flush;    
-			exit(0);
-        }
+
+
 		if (main_obj.recorded_events.size() == 0 && !event.is_down){
             cout << "skipping first" << endl;
         }
