@@ -18,7 +18,10 @@ unsigned char* make_left_alt_layer() {
 	ans['J'] = VK_DOWN;
 	ans['K'] = VK_UP;
 	ans['L'] = VK_RIGHT;
-	
+
+	ans['N'] = VK_HOME;
+	ans['M'] = VK_END;
+
 
 	ans['F'] = VK_LCONTROL;
 	ans['D'] = VK_LSHIFT;
