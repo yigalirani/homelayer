@@ -70,6 +70,8 @@ public:
 				return {};//key is not sent becuase it was used to turn on the layer
 			return{ e };//should clear the key[e.vocde]? or asset that is cleared
 		}
+		if (layers[e.vcode] != nullptr)
+			return {}; //ignore it because keys that activate layers are not used to send keys ever
 		key.layer_at_press = cur_layer;
 		auto replacment_code = cur_layer[e.vcode];
 		if (replacment_code == 0)

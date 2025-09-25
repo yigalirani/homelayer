@@ -1,0 +1,10 @@
+[
+  { "is_down": 1, "vcode": 162, "t": 0, "key": "VK_LCONTROL","dir":"↘"},
+  { "is_down": 1, "vcode": 162, "t": 0, "out_key": "VK_LCONTROL","out_dir":"↘"},
+  { "is_down": 1, "vcode": 39, "t": 133, "key": "Right Arrow","dir":"↘"},
+  { "is_down": 1, "vcode": 39, "t": 133, "out_key": "Right Arrow","out_dir":"↘"},
+  { "is_down": 0, "vcode": 39, "t": 250, "key": "Right Arrow","dir":"↗"},
+  { "is_down": 0, "vcode": 39, "t": 250, "out_key": "Right Arrow","out_dir":"↗"},
+  { "is_down": 0, "vcode": 162, "t": 419, "key": "VK_LCONTROL","dir":"↗"},
+  { "is_down": 0, "vcode": 162, "t": 419, "out_key": "VK_LCONTROL","out_dir":"↗"}
+]
