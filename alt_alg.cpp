@@ -13,16 +13,16 @@ public:
 
 void add_functions(unsigned char* ans)	{
 	ans[VK_OEM_3] = VK_ESCAPE;
-	ans[1] = VK_F1;
-	ans[2] = VK_F2;
-	ans[3] = VK_F3;
-	ans[4] = VK_F4;
-	ans[5] = VK_F5;
-	ans[6] = VK_F6;
-	ans[7] = VK_F7;
-	ans[8] = VK_F8;
-	ans[9] = VK_F9;
-	ans[0] = VK_F10	;
+	ans['1'] = VK_F1;
+	ans['2'] = VK_F2;
+	ans['3'] = VK_F3;
+	ans['4'] = VK_F4;
+	ans['5'] = VK_F5;
+	ans['6'] = VK_F6;
+	ans['7'] = VK_F7;
+	ans['8'] = VK_F8;
+	ans['9'] = VK_F9;
+	ans['0'] = VK_F10	;
 	ans[VK_OEM_MINUS] = VK_F11;
 	ans[VK_OEM_PLUS] = VK_F12;
 }

@@ -13,8 +13,8 @@
 
 const char* wmparm_to_tr(WPARAM parm) {
     switch (parm) {
-    case WM_KEYDOWN: return "//";
-    case WM_KEYUP: return "\\\\";
+    case WM_KEYDOWN: return "/__\\";
+    case WM_KEYUP: return "/==\\";
     case WM_CHAR: return "CHAR";
     case WM_DEADCHAR: return "DCHAR";
     case WM_SYSKEYDOWN: return "SDOWN";
@@ -27,8 +27,8 @@ const char* wmparm_to_tr(WPARAM parm) {
 }
 const char* is_down_to_tr(bool is_down) {
     if (is_down)
-        return "//";
-    return "\\\\";
+        return "\\__/";
+    return "/==\\";
 }
 using namespace std;
 string to_hexstring(int x) {
@@ -128,7 +128,7 @@ string adjustString(const string &input, int length) {
 
     if (inputLength > length) {
         return input.substr(0,length);
-    }
+    } 
     return string(input) + string(length - inputLength, ' ');
 }
 string pcode_to_str(Event e) {

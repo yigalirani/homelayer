@@ -74,9 +74,9 @@ void handle_escape_mode(Event& e){
     auto last_escape_mode = escape_mode;
     escape_mode = (e.vcode == VK_ESCAPE);
     if (escape_mode)
-        cout << highlight("escape mode on", "33");
+        cout << highlight("escape mode on", "33")<<endl;
     if (last_escape_mode && !escape_mode)
-        cout << highlight("escape mode off", "33");
+        cout << highlight("escape mode off", "33")<<endl;
 }
 
 void handle_event(Event& e,bool fake) {
