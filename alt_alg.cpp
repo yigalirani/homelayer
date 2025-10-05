@@ -17,6 +17,15 @@ unsigned char* make_alt_layer() {
 		ans[i] = 0;
 	return ans;
 }
+void add_nav(unsigned char* ans) {
+	ans['E' * 2] = VK_UP;
+	ans['S' * 2] = VK_LEFT;
+	ans['D' * 2] = VK_DOWN;
+	ans['F' * 2] = VK_RIGHT;
+
+	ans['W' * 2] = VK_HOME;
+	ans['R' * 2] = VK_END;
+}
 void add_functions(unsigned char* ans)	{
 	ans[VK_OEM_3*2] = VK_ESCAPE;
 	ans['1'*2] = VK_F1;
@@ -32,39 +41,38 @@ void add_functions(unsigned char* ans)	{
 	ans[VK_OEM_MINUS * 2] = VK_F11;
 	ans[VK_OEM_PLUS * 2] = VK_F12;
 }
-unsigned char* make_left_alt_layer() {
-	auto ans = make_alt_layer();
-	ans['H' * 2] = VK_LEFT;
-	ans['J' * 2] = VK_DOWN;
-	ans['K' * 2] = VK_UP;
-	ans['L' * 2] = VK_RIGHT;
+void add_alt(unsigned char* ans) {
+	ans[VK_TAB * 2] = VK_LMENU;
+	ans[VK_TAB * 2 + 1] = VK_TAB;
+	ans[VK_SHIFT * 2] = VK_LMENU;
+	ans[VK_SHIFT * 2 + 1] = VK_SHIFT;
 
-	ans['N' * 2] = VK_HOME;
-	ans['M' * 2] = VK_END;
+}
 
-
-	ans['F' * 2] = VK_LCONTROL;
-	ans['D' * 2] = VK_LSHIFT;
-	ans['S' * 2] = VK_LMENU;
-
+void add_ctl(unsigned char* ans) {
 	ans['C' * 2] = VK_LCONTROL;
-	ans['C' * 2+1] = 'C';
+	ans['C' * 2 + 1] = 'C';
 
 	ans['X' * 2] = VK_LCONTROL;
 	ans['X' * 2 + 1] = 'X';
 
 	ans['V' * 2] = VK_LCONTROL;
 	ans['V' * 2 + 1] = 'V';
+	ans['Z' * 2] = VK_LCONTROL;
+	ans['Z' * 2 + 1] = 'Z';
+}
+unsigned char* make_left_alt_layer() {
+	auto ans = make_alt_layer();
+	add_nav(ans);
 	add_functions(ans);
-
+	add_ctl(ans);
+	add_alt(ans);
 	return ans;
 }
 
 unsigned char* make_right_alt_layer() {
 	auto ans = make_alt_layer();
-	ans['J' * 2] = VK_RCONTROL;
-	ans['K' * 2] = VK_RSHIFT;
-	ans['L' * 2] = VK_RMENU;
+	add_nav(ans);
 	add_functions(ans);
 	return ans;
 }
