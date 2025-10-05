@@ -18,6 +18,7 @@ unsigned char* make_alt_layer() {
 	return ans;
 }
 void add_nav(unsigned char* ans) {
+
 	ans['E' * 2] = VK_UP;
 	ans['S' * 2] = VK_LEFT;
 	ans['D' * 2] = VK_DOWN;
@@ -44,8 +45,8 @@ void add_functions(unsigned char* ans)	{
 void add_alt(unsigned char* ans) {
 	ans[VK_TAB * 2] = VK_LMENU;
 	ans[VK_TAB * 2 + 1] = VK_TAB;
-	ans[VK_SHIFT * 2] = VK_LMENU;
-	ans[VK_SHIFT * 2 + 1] = VK_SHIFT;
+	ans[VK_LSHIFT * 2] = VK_LMENU;
+	ans[VK_LSHIFT * 2 + 1] = VK_SHIFT;
 
 }
 
@@ -67,6 +68,16 @@ unsigned char* make_left_alt_layer() {
 	add_functions(ans);
 	add_ctl(ans);
 	add_alt(ans);
+	return ans;
+}
+unsigned char* make_ignore() {
+	auto ans = make_alt_layer();
+	ans[VK_UP] = 1;
+	ans[VK_LEFT] = 1;
+	ans[VK_DOWN] = 1;
+	ans[VK_RIGHT] = 1;
+	ans[VK_HOME] = 1;
+	ans[VK_END] = 1;
 	return ans;
 }
 
@@ -95,6 +106,7 @@ class AltAlg:public Alg {
 	AltKey keys[256];
 	unsigned char* cur_layer = nullptr;
 	unsigned char* layers[256] = { nullptr };
+	unsigned char* ignore_layer = make_ignore();
 
 public:
 	AltAlg() {
@@ -103,6 +115,8 @@ public:
 	}
 	vector<Event>handle_event(Event& e) {
 		auto &key = keys[e.vcode];
+		if (ignore_layer[e.vcode])
+			return {};
 		if (!e.is_down) {//it is up
 			auto layer_at_press = key.layer_at_press;
 			key.layer_at_press = nullptr;
